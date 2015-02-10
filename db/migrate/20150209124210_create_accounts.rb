@@ -5,6 +5,7 @@ class CreateAccounts < ActiveRecord::Migration
       t.string :zendesk_url
       t.string :zendesk_access_token
       t.string :ongair_token
+      t.string :ongair_id
 
       t.timestamps
     end
