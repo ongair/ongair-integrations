@@ -5,7 +5,7 @@ require_relative 'zendesk'
 module Share
   class API < Grape::API    
     version 'v1', using: :header, vendor: 'ongair'
-    format :txt
+    format :json
     prefix :api
 
     helpers do
