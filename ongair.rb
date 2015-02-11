@@ -1,9 +1,18 @@
 require 'grape'
+require 'active_record'
+require './models/account'
 
 require_relative 'zendesk'
 
+# conf = YAML.load_file('./config/database.yml')
+# ActiveRecord::Base.establish_connection({adapter:  'sqlite3', database: 'db/dev.sqlite3'})
+
 module Ongair
-  class API < Grape::API    
+  class API < Grape::API 
+    environment = ENV['RACK_ENV'] || 'development'
+    dbconfig = YAML.load(File.read('config/database.yml'))
+    ActiveRecord::Base.establish_connection dbconfig[environment]
+    
     version 'v1', using: :header, vendor: 'ongair'
     format :json
     prefix :api
@@ -19,6 +28,31 @@ module Ongair
 
       def authenticate!
         error!('401 Unauthorized', 401) unless current_user
+      end
+    end
+
+    resource :accounts do
+      desc "Return an account"
+      params do
+        requires :ongair_id, type: Integer, desc: "Account id"
+      end
+      route_param :ongair_id do
+        get do
+          Account.find_by(ongair_id: params[:account])
+        end
+      end
+
+      desc "Create a new account"
+      params do
+        requires :zendesk_url, type: String
+        requires :zendesk_access_token, type: String
+        requires :ongair_token, type: String
+        requires :ongair_id, type: String
+      end
+      post do
+        # authenticate!
+        Account.create! zendesk_url: params[:zendesk_url], zendesk_access_token: params[:zendesk_access_token],
+         ongair_token: params[:ongair_token], ongair_id: params[:ongair_id]
       end
     end
 
