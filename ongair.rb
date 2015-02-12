@@ -53,8 +53,13 @@ module Ongair
       end
       post do
         # authenticate!
-        Account.create! zendesk_url: params[:zendesk_url], zendesk_access_token: params[:zendesk_access_token],
+        a = Account.create! zendesk_url: params[:zendesk_url], zendesk_access_token: params[:zendesk_access_token],
          zendesk_user: params[:zendesk_user], ongair_token: params[:ongair_token], ongair_id: params[:ongair_id]
+        conditions = {all: [{field: "update_type", operator: "is", value: "Change"}, {field: "comment_is_public", operator: "is", value: "requester_can_see_comment"}, {field: "comment_is_public", operator: "is", value: "true"}]}
+        target_url = "http://1a7a4502.ngrok.com/inbound?ticket={{ticket.id}}&account=#{a.ongair_id}"
+        target = Zendesk.create_target(a, "Ongair", target_url, "comment", "POST")
+        actions = [{field: "notification_target", value: [target.id, "{{ticket.latest_comment}}"]}]
+        Zendesk.create_trigger(a, "Ticket commented on", conditions, actions)
       end
     end
 
