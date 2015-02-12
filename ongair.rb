@@ -113,7 +113,7 @@ module Ongair
       end
     end
 
-    resource :ticket_field do
+    resource :ticket_fields do
       desc "Return a ticket field"
       params do
         requires :title, type: String, desc: "Ticket field title"
@@ -131,6 +131,18 @@ module Ongair
       end
       post do
         Zendesk.create_ticket_field account, params[:type], params[:title]
+      end
+    end
+
+    resource :notifications do
+      desc "Send ticket updates to Ongair"
+      params do
+        # requires :phone_number, type: String
+        # requires :message, type: String
+      end
+      post do
+        phone_number = Zendesk.find_ticket(account, params[:ticket].to_i)["custom_fields"][0].value
+        Zendesk.forward_ticket_updates phone_number, params[:comment]
       end
     end
   end
