@@ -73,7 +73,8 @@ class Zendesk
     ZendeskAPI::TicketField.create(self.client(account), {type: type, title: title})
   end
 
-  def find_ticket_field account, title
+  def self.find_ticket_field account, title
+    field = ""
     self.client(account).ticket_fields.all do |ticket_field|
       if ticket_field["title"] == title
         field = ticket_field
@@ -86,17 +87,17 @@ class Zendesk
     HTTParty.post("http://beta.ongair.im/api/v1/base/send?token=#{ENV['ONGAIR_API_KEY']}", body: {phone_number: phone_number, text: message, thread: true})
   end
 
-  def self.find_user_by_phone_number account, phone_number
-    self.client(account).users.all do |user|
+  def self.find_user_by_phone_number client, phone_number
+    client.users.all do |user|
       return user if user.phone == phone_number
     end
   end
 
-  def self.create_user account, name, phone_number
-    if find_user_by_phone_number(phone_number).nil?
-      user = ZendeskAPI::User.create(self.client(account), { name: name, phone: phone_number })
+  def self.create_user client, name, phone_number
+    if self.find_user_by_phone_number(client, phone_number).nil?
+      user = ZendeskAPI::User.create(client, { name: name, phone: phone_number })
     else
-      user = find_user_by_phone_number(account, phone_number)
+      user = self.find_user_by_phone_number(client, phone_number)
     end
     user
   end

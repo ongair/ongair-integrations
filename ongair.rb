@@ -1,6 +1,8 @@
 require 'grape'
 require 'active_record'
 require './models/account'
+require 'rubygems'
+require 'zendesk_api'
 
 require_relative 'zendesk'
 
@@ -75,18 +77,19 @@ module Ongair
       desc "Create a new ticket"
       params do
         requires :subject, type: String
-        requires :comment, type: String
-        requires :submitter_id, type: String
-        requires :requester_id, type: String
+        requires :text, type: String
+        requires :phone_number, type: String
+        requires :name, type: String
         requires :priority, type: String
       end
       post do
         # authenticate!
-        tickets = Zendesk.find_tickets_by_phone_number_and_status params[:phone_number], "open"
-        user = Zendesk.create_user(params[:name], params[:phone_number])
+        tickets = Zendesk.find_tickets_by_phone_number_and_status account, params[:phone_number], "open"
+        user = Zendesk.create_user(Zendesk.client(account), params[:name], params[:phone_number])
         if tickets.size == 0
           ticket_field = Zendesk.find_ticket_field account, params[:title]
-          Zendesk.create_ticket "#{params[:phone_number]}##{tickets.size + 1}", params[:text], user.id, user.id, "Urgent", [{"id"=>ticket_field["id"], "value"=>params[:phone_number]}]
+          Zendesk.create_ticket(account, "#{params[:phone_number]}##{tickets.size + 1}", params[:text], user.id, user.id, "Urgent",
+           [{"id"=>ticket_field["id"], "value"=>params[:phone_number]}])
         else
           ticket = tickets.last
           ticket.comment = { :value => params[:text], :author_id => user.id, public: false }
