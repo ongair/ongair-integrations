@@ -1,21 +1,24 @@
 require 'rubygems'
+require 'zendesk_api'
+require 'httparty'
 
-module Zendesk
-  def client zendesk_access_token, url
+class Zendesk
+
+  def self.client account
     client = ZendeskAPI::Client.new do |config|
       # Mandatory:
 
-      config.url = url # e.g. https://mydesk.zendesk.com/api/v2
+      config.url = account.zendesk_url # e.g. https://mydesk.zendesk.com/api/v2
 
       # Basic / Token Authentication
-      # config.username = ENV['ZENDESK_USER']
+      config.username = account.zendesk_user
 
       # Choose one of the following depending on your authentication choice
-      # config.token = "your zendesk token"
+      config.token = account.zendesk_access_token
       # config.password = ENV['ZENDESK_PASSWORD']
 
       # OAuth Authentication
-      config.access_token = zendesk_access_token
+      # config.access_token = zendesk_access_token
 
       # Optional:
 
@@ -40,25 +43,25 @@ module Zendesk
   end
 
   def self.current_user account
-    client(account.zendesk_access_token, account.zendesk_url).current_user
+    self.client(account).current_user
   end
 
   def self.tickets account
-    client(account.zendesk_access_token, account.zendesk_url).tickets
+    self.client(account).tickets
   end
 
   def self.create_ticket account, subject, comment, submitter_id, requester_id, priority, custom_fields=[]
-    ZendeskAPI::Ticket.create(client(account.zendesk_access_token, account.zendesk_url), :subject => subject, :comment => { :value => comment }, :submitter_id => submitter_id,
+    ZendeskAPI::Ticket.create(self.client(account), :subject => subject, :comment => { :value => comment }, :submitter_id => submitter_id,
      :requester_id => requester_id, :priority => priority, :custom_fields => custom_fields)
   end
 
   def self.find_ticket account, id
-    client(account.zendesk_access_token, account.zendesk_url).tickets.find(client(account.zendesk_access_token, account.zendesk_url), :id => id)
+    self.client(account).tickets.find(client(account), :id => id)
   end
 
   def self.find_tickets_by_phone_number_and_status account, phone_number, status
     tickets = []
-    client(account.zendesk_access_token, account.zendesk_url).tickets.all do |ticket|
+    self.client(account).tickets.all do |ticket|
       if ticket["custom_fields"][0].value == phone_number && ticket.status == status
         tickets << ticket
       end
@@ -67,11 +70,11 @@ module Zendesk
   end
 
   def create_ticket_field account, type, title
-    ZendeskAPI::TicketField.create(client(account.zendesk_access_token, account.zendesk_url), {type: type, title: title})
+    ZendeskAPI::TicketField.create(self.client(account), {type: type, title: title})
   end
 
   def find_ticket_field account, title
-    client(account.zendesk_access_token, account.zendesk_url).ticket_fields.all do |ticket_field|
+    self.client(account).ticket_fields.all do |ticket_field|
       if ticket_field["title"] == title
         field = ticket_field
       end
@@ -84,27 +87,27 @@ module Zendesk
   end
 
   def self.find_user_by_phone_number account, phone_number
-    client(account.zendesk_access_token, account.zendesk_url).users.all do |user|
+    self.client(account).users.all do |user|
       return user if user.phone == phone_number
     end
   end
 
   def self.create_user account, name, phone_number
     if find_user_by_phone_number(phone_number).nil?
-      user = ZendeskAPI::User.create(client(account.zendesk_access_token, account.zendesk_url), { name: name, phone: phone_number })
+      user = ZendeskAPI::User.create(self.client(account), { name: name, phone: phone_number })
     else
-      user = find_user_by_phone_number(phone_number)
+      user = find_user_by_phone_number(account, phone_number)
     end
     user
   end
 
   def self.create_trigger account, title, conditions={}, actions=[]
-    ZendeskAPI::Trigger.create(client(account.zendesk_access_token, account.zendesk_url), {title: title, conditions: conditions, actions: actions})
+    ZendeskAPI::Trigger.create(self.client(account), {title: title, conditions: conditions, actions: actions})
     # actions = [{field: "notification_target", value: ["20092202", "Ticket {{ticket.id}} has been updated."]}] # Use target as action
-    # ZendeskAPI::Trigger.create(z.client(account.zendesk_access_token, account.zendesk_url), {title: "Trigger from web API", conditions: {all: [{field: "status", operator: "is", value: "open"}]}, actions: [{field: "status", value: "solved"}]})
+    # ZendeskAPI::Trigger.create(z.self.client(account), {title: "Trigger from web API", conditions: {all: [{field: "status", operator: "is", value: "open"}]}, actions: [{field: "status", value: "solved"}]})
   end
 
   def self.create_target account, title, target_url, attribute, method
-    ZendeskAPI::Target.create(client(account.zendesk_access_token, account.zendesk_url), {type: "url_target", title: title, target_url: target_url, attribute: attribute, method: method})   
+    ZendeskAPI::Target.create(self.client(account), {type: "url_target", title: title, target_url: target_url, attribute: attribute, method: method})   
   end
 end

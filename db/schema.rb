@@ -16,6 +16,7 @@ ActiveRecord::Schema.define(version: 20150209124210) do
   create_table "accounts", force: :cascade do |t|
     t.string   "zendesk_url"
     t.string   "zendesk_access_token"
+    t.string   "zendesk_user"
     t.string   "ongair_token"
     t.string   "ongair_id"
     t.datetime "created_at"

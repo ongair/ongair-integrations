@@ -12,7 +12,7 @@ module Ongair
     environment = ENV['RACK_ENV'] || 'development'
     dbconfig = YAML.load(File.read('config/database.yml'))
     ActiveRecord::Base.establish_connection dbconfig[environment]
-    
+
     version 'v1', using: :header, vendor: 'ongair'
     format :json
     prefix :api
@@ -52,7 +52,7 @@ module Ongair
       post do
         # authenticate!
         Account.create! zendesk_url: params[:zendesk_url], zendesk_access_token: params[:zendesk_access_token],
-         ongair_token: params[:ongair_token], ongair_id: params[:ongair_id]
+         zendesk_user: params[:zendesk_user], ongair_token: params[:ongair_token], ongair_id: params[:ongair_id]
       end
     end
 

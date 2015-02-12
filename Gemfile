@@ -5,7 +5,8 @@ gem 'grape-swagger'
 gem 'activerecord', require: 'active_record'
 gem 'sqlite3'
 gem 'grape'
-gem 'httparty'
+gem "zendesk_api"
+gem "httparty"
 gem 'rake'
 
 group :development do 

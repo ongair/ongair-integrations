@@ -28,6 +28,8 @@ GEM
     descendants_tracker (0.0.4)
       thread_safe (~> 0.3, >= 0.3.1)
     equalizer (0.0.9)
+    faraday (0.9.1)
+      multipart-post (>= 1.2, < 3)
     grape (0.10.1)
       activesupport
       builder
@@ -50,10 +52,13 @@ GEM
       multi_xml (>= 0.5.2)
     i18n (0.7.0)
     ice_nine (0.11.1)
+    inflection (1.0.0)
     json (1.8.2)
+    mime-types (2.4.3)
     minitest (5.5.1)
     multi_json (1.10.1)
     multi_xml (0.5.5)
+    multipart-post (2.0.0)
     mysql2 (0.3.17)
     rack (1.6.0)
     rack-accept (0.4.5)
@@ -70,6 +75,13 @@ GEM
       coercible (~> 1.0)
       descendants_tracker (~> 0.0, >= 0.0.3)
       equalizer (~> 0.0, >= 0.0.9)
+    zendesk_api (1.5.1)
+      faraday (~> 0.9)
+      hashie (>= 1.2, < 4.0)
+      inflection
+      mime-types
+      multi_json
+      multipart-post (~> 2.0)
 
 PLATFORMS
   ruby
@@ -83,3 +95,4 @@ DEPENDENCIES
   mysql2
   rake
   sqlite3
+  zendesk_api
