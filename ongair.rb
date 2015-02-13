@@ -75,10 +75,10 @@ module Ongair
     end
 
     resource :tickets do 
-      desc "Return all the tickets"
-      get do
-        Zendesk.tickets account
-      end    
+      # desc "Return all the tickets"
+      # get do
+      #   Zendesk.tickets account
+      # end    
 
       desc "Return a ticket"
       params do
@@ -103,7 +103,7 @@ module Ongair
         tickets = Zendesk.find_tickets_by_phone_number_and_status account, params[:phone_number], "open"
         user = Zendesk.create_user(Zendesk.client(account), params[:name], params[:phone_number])
         if tickets.size == 0
-          ticket_field = Zendesk.find_ticket_field account, params[:title]
+          ticket_field = Zendesk.find_or_create_ticket_field account, "text", params[:title]
           Zendesk.create_ticket(account, "#{params[:phone_number]}##{tickets.size + 1}", params[:text], user.id, user.id, "Urgent",
            [{"id"=>ticket_field["id"], "value"=>params[:phone_number]}])
         else

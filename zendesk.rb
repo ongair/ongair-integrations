@@ -83,6 +83,16 @@ class Zendesk
     field
   end
 
+  def self.find_or_create_ticket_field account, type, title
+    field = ""
+    if self.find_ticket_field(account, title).nil?
+      field = self.create_ticket_field account, type, title
+    else
+      field = self.find_ticket_field(account, title)
+    end
+    field
+  end
+
   def self.forward_ticket_updates phone_number, message
     HTTParty.post("http://beta.ongair.im/api/v1/base/send?token=#{ENV['ONGAIR_API_KEY']}", body: {phone_number: phone_number, text: message, thread: true})
   end
