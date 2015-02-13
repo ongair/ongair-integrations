@@ -55,11 +55,22 @@ module Ongair
         # authenticate!
         a = Account.create! zendesk_url: params[:zendesk_url], zendesk_access_token: params[:zendesk_access_token],
          zendesk_user: params[:zendesk_user], ongair_token: params[:ongair_token], ongair_id: params[:ongair_id]
+
+        # Trigger and action for ticket updates
+        
         conditions = {all: [{field: "update_type", operator: "is", value: "Change"}, {field: "comment_is_public", operator: "is", value: "requester_can_see_comment"}, {field: "comment_is_public", operator: "is", value: "true"}]}
-        target_url = "http://1a7a4502.ngrok.com/inbound?ticket={{ticket.id}}&account=#{a.ongair_id}"
+        target_url = "http://1a7a4502.ngrok.com/api/notifications?ticket={{ticket.id}}&account=#{a.ongair_id}"
         target = Zendesk.create_target(a, "Ongair", target_url, "comment", "POST")
         actions = [{field: "notification_target", value: [target.id, "{{ticket.latest_comment}}"]}]
         Zendesk.create_trigger(a, "Ticket commented on", conditions, actions)
+
+        # Trigger and action for ticket status changes
+
+        conditions = {all: [{field: "status", operator: "changed", value: nil}], any: []}
+        target_url = "http://1a7a4502.ngrok.com/api/tickets/status_change?ticket={{ticket.id}}&account=#{a.ongair_id}&status={{ticket.status}}"
+        target = Zendesk.create_target(a, "Ongair - Ticket status changed", target_url, "comment", "POST")
+        actions = [{field: "notification_target", value: [target.id, "The status of your ticket has been changed to {{ticket.status}}"]}]
+        Zendesk.create_trigger(a, "Ticket status changed", conditions, actions)
       end
     end
 
@@ -102,19 +113,26 @@ module Ongair
         end
       end
 
-      desc "Comment on a ticket"
-      params do
-        requires :value, type: String
-        requires :author_id, type: String
-        requires :public, type: String
-      end
-      post do
-        # authenticate!
-        tickets = Zendesk.find_tickets_by_phone_number_and_status params[:phone_number], "open"
-        user = Zendesk.create_user(params[:name], params[:phone_number])
-        ticket = tickets.last
-        ticket.comment = { :value => params[:text], :author_id => user.id, public: false }
-        ticket.save!
+      # desc "Comment on a ticket"
+      # params do
+      #   requires :value, type: String
+      #   requires :author_id, type: String
+      #   requires :public, type: String
+      # end
+      # post do
+      #   # authenticate!
+      #   tickets = Zendesk.find_tickets_by_phone_number_and_status params[:phone_number], "open"
+      #   user = Zendesk.create_user(params[:name], params[:phone_number])
+      #   ticket = tickets.last
+      #   ticket.comment = { :value => params[:text], :author_id => user.id, public: false }
+      #   ticket.save!
+      # end
+
+      desc "Ticket status change notifications"
+
+      post :status_change do
+        # puts "<><><><><> #{params}"
+        # post to Ongair so that a conversation can be closed when a ticket is closed
       end
     end
 
