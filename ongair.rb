@@ -5,6 +5,7 @@ require 'rubygems'
 require 'zendesk_api'
 
 require_relative 'zendesk'
+require_relative 'whatsapp'
 
 # conf = YAML.load_file('./config/database.yml')
 # ActiveRecord::Base.establish_connection({adapter:  'sqlite3', database: 'db/dev.sqlite3'})
@@ -165,7 +166,7 @@ module Ongair
       end
       post do
         phone_number = Zendesk.find_ticket(account, params[:ticket].to_i)["custom_fields"][0].value
-        Zendesk.forward_ticket_updates phone_number, params[:comment]
+        WhatsApp.send_message account, phone_number, params[:comment]
       end
     end
   end
