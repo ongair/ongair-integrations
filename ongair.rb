@@ -25,6 +25,10 @@ module Ongair
         Account.find_by(ongair_phone_number: params[:account])
       end
 
+      def logger
+        API.logger
+      end
+
       def current_user
         Zendesk.current_user(account)
       end
@@ -103,7 +107,8 @@ module Ongair
         # requires :priority, type: String
       end
       post do
-        # authenticate!
+        logger.info "Params #{params}"
+        puts "Params #{params}"
         tickets = Zendesk.find_tickets_by_phone_number_and_status account, params[:phone_number], "open"
         user = Zendesk.create_user(Zendesk.client(account), params[:name], params[:phone_number])
         if tickets.size == 0
