@@ -18,7 +18,8 @@ ActiveRecord::Schema.define(version: 20150209124210) do
     t.string   "zendesk_access_token"
     t.string   "zendesk_user"
     t.string   "ongair_token"
-    t.string   "ongair_id"
+    t.string   "ongair_phone_number"
+    t.string   "ongair_url"
     t.datetime "created_at"
     t.datetime "updated_at"
   end

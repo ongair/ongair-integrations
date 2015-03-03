@@ -8,7 +8,7 @@ API for integrating Ongair into ZenDesk, FreshDesk and other platforms
     URL: http://41.242.1.46/api/accounts
     
     `POST {zendesk_url: "https://username.zendesk.com/api/v2", zendesk_access_token: "kshgksehgksjhg", 
-    ongair_token: "dssdgsdg", ongair_id: ONGAIR_ACCOUNT_ID, zendesk_user: "you@mail.com"}`
+    ongair_token: "dssdgsdg", ongair_phone_number: '254722200200', ongair_url: 'http://app.ongair.im', zendesk_user: "you@mail.com"}`
     
   2. Create ticket from WhatsApp message
     

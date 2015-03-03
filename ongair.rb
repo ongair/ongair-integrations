@@ -22,7 +22,7 @@ module Ongair
 
     helpers do
       def account
-        Account.find_by(ongair_id: params[:account])
+        Account.find_by(ongair_phone_number: params[:account])
       end
 
       def current_user
@@ -37,11 +37,11 @@ module Ongair
     resource :accounts do
       desc "Return an account"
       params do
-        requires :ongair_id, type: Integer, desc: "Account id"
+        requires :ongair_phone_number, type: String, desc: "Ongair Phone Number"
       end
-      route_param :ongair_id do
+      route_param :ongair_phone_number do
         get do
-          Account.find_by(ongair_id: params[:account])
+          Account.find_by(ongair_phone_number: params[:account])
         end
       end
 
@@ -50,17 +50,19 @@ module Ongair
         requires :zendesk_url, type: String
         requires :zendesk_access_token, type: String
         requires :ongair_token, type: String
-        requires :ongair_id, type: String
+        requires :ongair_phone_number, type: String
+        requires :ongair_url, type: String
       end
       post do
         # authenticate!
         a = Account.create! zendesk_url: params[:zendesk_url], zendesk_access_token: params[:zendesk_access_token],
-         zendesk_user: params[:zendesk_user], ongair_token: params[:ongair_token], ongair_id: params[:ongair_id]
+         zendesk_user: params[:zendesk_user], ongair_token: params[:ongair_token], ongair_phone_number: params[:ongair_phone_number],
+         ongair_url: params[:ongair_url]
 
         # Trigger and action for ticket updates
         
         conditions = {all: [{field: "update_type", operator: "is", value: "Change"}, {field: "comment_is_public", operator: "is", value: "requester_can_see_comment"}, {field: "comment_is_public", operator: "is", value: "true"}]}
-        target_url = "http://41.242.1.46/api/notifications?ticket={{ticket.id}}&account=#{a.ongair_id}"
+        target_url = "http://41.242.1.46/api/notifications?ticket={{ticket.id}}&account=#{a.ongair_phone_number}"
         target = Zendesk.create_target(a, "Ongair", target_url, "comment", "POST")
         actions = [{field: "notification_target", value: [target.id, "{{ticket.latest_comment}}"]}]
         Zendesk.create_trigger(a, "Ticket commented on", conditions, actions)
@@ -68,7 +70,7 @@ module Ongair
         # Trigger and action for ticket status changes
 
         conditions = {all: [{field: "status", operator: "changed", value: nil}], any: []}
-        target_url = "http://41.242.1.46/api/tickets/status_change?ticket={{ticket.id}}&account=#{a.ongair_id}&status={{ticket.status}}"
+        target_url = "http://41.242.1.46/api/tickets/status_change?ticket={{ticket.id}}&account=#{a.ongair_phone_number}&status={{ticket.status}}"
         target = Zendesk.create_target(a, "Ongair - Ticket status changed", target_url, "comment", "POST")
         actions = [{field: "notification_target", value: [target.id, "The status of your ticket has been changed to {{ticket.status}}"]}]
         Zendesk.create_trigger(a, "Ticket status changed", conditions, actions)
@@ -93,18 +95,18 @@ module Ongair
 
       desc "Create a new ticket"
       params do
-        requires :subject, type: String
+        # requires :subject, type: String
         requires :text, type: String
         requires :phone_number, type: String
         requires :name, type: String
-        requires :priority, type: String
+        # requires :priority, type: String
       end
       post do
         # authenticate!
         tickets = Zendesk.find_tickets_by_phone_number_and_status account, params[:phone_number], "open"
         user = Zendesk.create_user(Zendesk.client(account), params[:name], params[:phone_number])
         if tickets.size == 0
-          ticket_field = Zendesk.find_or_create_ticket_field account, "text", params[:title]
+          ticket_field = Zendesk.find_or_create_ticket_field account, "text", "Phone number"
           Zendesk.create_ticket(account, "#{params[:phone_number]}##{tickets.size + 1}", params[:text], user.id, user.id, "Urgent",
            [{"id"=>ticket_field["id"], "value"=>params[:phone_number]}])
         else
