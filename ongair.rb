@@ -60,7 +60,7 @@ module Ongair
         # Trigger and action for ticket updates
         
         conditions = {all: [{field: "update_type", operator: "is", value: "Change"}, {field: "comment_is_public", operator: "is", value: "requester_can_see_comment"}, {field: "comment_is_public", operator: "is", value: "true"}]}
-        target_url = "http://1a7a4502.ngrok.com/api/notifications?ticket={{ticket.id}}&account=#{a.ongair_id}"
+        target_url = "http://41.242.1.46/api/notifications?ticket={{ticket.id}}&account=#{a.ongair_id}"
         target = Zendesk.create_target(a, "Ongair", target_url, "comment", "POST")
         actions = [{field: "notification_target", value: [target.id, "{{ticket.latest_comment}}"]}]
         Zendesk.create_trigger(a, "Ticket commented on", conditions, actions)
@@ -68,7 +68,7 @@ module Ongair
         # Trigger and action for ticket status changes
 
         conditions = {all: [{field: "status", operator: "changed", value: nil}], any: []}
-        target_url = "http://1a7a4502.ngrok.com/api/tickets/status_change?ticket={{ticket.id}}&account=#{a.ongair_id}&status={{ticket.status}}"
+        target_url = "http://41.242.1.46/api/tickets/status_change?ticket={{ticket.id}}&account=#{a.ongair_id}&status={{ticket.status}}"
         target = Zendesk.create_target(a, "Ongair - Ticket status changed", target_url, "comment", "POST")
         actions = [{field: "notification_target", value: [target.id, "The status of your ticket has been changed to {{ticket.status}}"]}]
         Zendesk.create_trigger(a, "Ticket status changed", conditions, actions)
