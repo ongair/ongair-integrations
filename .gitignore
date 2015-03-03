@@ -3,3 +3,4 @@ tmp
 ngrok
 /config/database.yml
 /db/*.sqlite3
+run.sh
