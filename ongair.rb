@@ -74,6 +74,7 @@ module Ongair
         target = Zendesk.create_target(a, "Ongair - Ticket status changed", target_url, "comment", "POST")
         actions = [{field: "notification_target", value: [target.id, "The status of your ticket has been changed to {{ticket.status}}"]}]
         Zendesk.create_trigger(a, "Ticket status changed", conditions, actions)
+        { success: true }
       end
     end
 
