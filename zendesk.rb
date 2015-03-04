@@ -62,19 +62,21 @@ class Zendesk
   def self.find_tickets_by_phone_number_and_status account, phone_number, status
     tickets = []
     self.client(account).tickets.all do |ticket|
-      if ticket["custom_fields"][0].value == phone_number && ticket.status == status
-        tickets << ticket
+      if !ticket["custom_fields"].empty?
+        if ticket["custom_fields"][0].value == phone_number && ticket.status == status
+          tickets << ticket
+        end
       end
     end
     tickets
   end
 
-  def create_ticket_field account, type, title
+  def self.create_ticket_field account, type, title
     ZendeskAPI::TicketField.create(self.client(account), {type: type, title: title})
   end
 
   def self.find_ticket_field account, title
-    field = ""
+    field = nil
     self.client(account).ticket_fields.all do |ticket_field|
       if ticket_field["title"] == title
         field = ticket_field
