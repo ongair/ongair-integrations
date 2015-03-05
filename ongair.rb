@@ -128,7 +128,7 @@ module Ongair
             ticket.comment = { :value => params[:text], :author_id => user.id, public: false }
           elsif params[:notification_type] == "ImageReceived"
             ticket.comment = { :value => "Image attached", :author_id => user.id, public: false }
-            ticket.comment.uploads << params[:image]
+            ticket.comment.uploads << File.new(params[:image])
           end
           ticket.save!
         end
