@@ -96,7 +96,7 @@ class Zendesk
   end
 
   def self.upload account, file
-    ZendeskAPI::Attachment.new(self.client(account), {file: file})
+    ZendeskAPI::Attachment.new(self.client(account), {file: file}).save
   end
 
   def self.find_user_by_phone_number client, phone_number
