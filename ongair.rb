@@ -99,13 +99,13 @@ module Ongair
       end
 
       desc "Create a new ticket"
-      params do
-        # requires :subject, type: String
-        requires :text, type: String
-        requires :phone_number, type: String
-        requires :name, type: String
-        # requires :priority, type: String
-      end
+      # params do
+      #   # requires :subject, type: String
+      #   requires :text, type: String
+      #   requires :phone_number, type: String
+      #   requires :name, type: String
+      #   # requires :priority, type: String
+      # end
       post do
         logger.info "Params #{params}"
         puts "Params #{params}"
