@@ -113,11 +113,23 @@ module Ongair
         user = Zendesk.create_user(Zendesk.client(account), params[:name], params[:phone_number])
         if tickets.size == 0
           ticket_field = Zendesk.find_or_create_ticket_field account, "text", "Phone number"
-          Zendesk.create_ticket(account, "#{params[:phone_number]}##{tickets.size + 1}", params[:text], user.id, user.id, "Urgent",
-           [{"id"=>ticket_field["id"], "value"=>params[:phone_number]}])
+          if params[:notification_type] == "MessageReveived"
+            Zendesk.create_ticket(account, "#{params[:phone_number]}##{tickets.size + 1}", params[:text], user.id, user.id, "Urgent",
+              [{"id"=>ticket_field["id"], "value"=>params[:phone_number]}])
+          elsif params[:notification_type] == "ImageReveived"
+            ticket = Zendesk.create_ticket(account, "#{params[:phone_number]}##{tickets.size + 1}", "Image attached", user.id, user.id, "Urgent",
+              [{"id"=>ticket_field["id"], "value"=>params[:phone_number]}])
+            ticket.comment.uploads << params[:image]
+            ticket.save
+          end
         else
           ticket = tickets.last
-          ticket.comment = { :value => params[:text], :author_id => user.id, public: false }
+          if params[:notification_type] == "MessageReveived"
+            ticket.comment = { :value => params[:text], :author_id => user.id, public: false }
+          elsif params[:notification_type] == "ImageReveived"
+            ticket.comment = { :value => "Image attached", :author_id => user.id, public: false }
+            ticket.comment.uploads << params[:image]
+          end
           ticket.save!
         end
       end
