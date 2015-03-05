@@ -95,7 +95,7 @@ class Zendesk
     field
   end
 
-  def upload account, file
+  def self.upload account, file
     ZendeskAPI::Attachment.new(self.client(account), {file: file})
   end
 
