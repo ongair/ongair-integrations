@@ -119,7 +119,7 @@ module Ongair
           elsif params[:notification_type] == "ImageReceived"
             ticket = Zendesk.create_ticket(account, "#{params[:phone_number]}##{tickets.size + 1}", "Image attached", user.id, user.id, "Urgent",
               [{"id"=>ticket_field["id"], "value"=>params[:phone_number]}])
-            ticket.comment.uploads << params[:image]
+            ticket.comment.uploads << Zendesk.upload(account, params[:image])
             ticket.save
           end
         else
@@ -128,7 +128,7 @@ module Ongair
             ticket.comment = { :value => params[:text], :author_id => user.id, public: false }
           elsif params[:notification_type] == "ImageReceived"
             ticket.comment = { :value => "Image attached", :author_id => user.id, public: false }
-            ticket.comment.uploads << File.new(params[:image])
+            ticket.comment.uploads << Zendesk.upload(account, params[:image])
           end
           ticket.save!
         end

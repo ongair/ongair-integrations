@@ -95,9 +95,9 @@ class Zendesk
     field
   end
 
-  # def self.forward_ticket_updates phone_number, message
-  #   HTTParty.post("http://beta.ongair.im/api/v1/base/send?token=#{ENV['ONGAIR_API_KEY']}", body: {phone_number: phone_number, text: message, thread: true})
-  # end
+  def upload account, file
+    ZendeskAPI::Attachment.new(self.client(account), {file: file})
+  end
 
   def self.find_user_by_phone_number client, phone_number
     client.users.all do |user|
