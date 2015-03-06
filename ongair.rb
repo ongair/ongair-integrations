@@ -3,6 +3,7 @@ require 'active_record'
 require './models/account'
 require 'rubygems'
 require 'zendesk_api'
+require 'open-uri'
 
 require_relative 'zendesk'
 require_relative 'whatsapp'
@@ -23,6 +24,12 @@ module Ongair
     helpers do
       def account
         Account.find_by(ongair_phone_number: params[:account])
+      end
+
+      def download_file
+        open('image.png', 'wb') do |file|
+          file << open(params[:image]).read
+        end
       end
 
       def logger
@@ -119,7 +126,8 @@ module Ongair
           elsif params[:notification_type] == "ImageReceived"
             ticket = Zendesk.create_ticket(account, "#{params[:phone_number]}##{tickets.size + 1}", "Image attached", user.id, user.id, "Urgent",
               [{"id"=>ticket_field["id"], "value"=>params[:phone_number]}])
-            ticket.comment.uploads << Zendesk.upload(account, params[:image])
+            download_file
+            ticket.comment.uploads << "image.png"
             ticket.save
           end
         else
@@ -128,7 +136,8 @@ module Ongair
             ticket.comment = { :value => params[:text], :author_id => user.id, public: false }
           elsif params[:notification_type] == "ImageReceived"
             ticket.comment = { :value => "Image attached", :author_id => user.id, public: false }
-            ticket.comment.uploads << Zendesk.upload(account, params[:image])
+            download_file
+            ticket.comment.uploads << "image.png"
           end
           ticket.save!
         end
