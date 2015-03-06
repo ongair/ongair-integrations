@@ -128,8 +128,8 @@ module Ongair
               [{"id"=>ticket_field["id"], "value"=>params[:phone_number]}])
             download_file
             ticket.comment.uploads << "image.png"
-            `rm image.png`
             ticket.save
+            `rm image.png`
           end
         else
           ticket = tickets.last
@@ -139,9 +139,9 @@ module Ongair
             ticket.comment = { :value => "Image attached", :author_id => user.id, public: false }
             download_file
             ticket.comment.uploads << "image.png"
-            `rm image.png`
           end
           ticket.save!
+          `rm image.png`
         end
       end
 
