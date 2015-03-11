@@ -4,8 +4,7 @@ class WhatsApp
 	end
 
 	def self.send_location
-	  branch = Location.find_nearest params[:latitude], params[:longitude]
-	  HTTParty.post("http://app.ongair.im/api/v1/base/send?token=#{ENV['ONGAIR_API_KEY']}", body: {phone_number: params[:phone_number], text: branch.address, thread: true})
-	  render json: {success: true}
+	  location = Location.find_nearest params[:latitude], params[:longitude]
+	  HTTParty.post("#{location.account.ongair_url}/api/v1/base/send?token=#{location.account.ongair_token}", body: {phone_number: params[:phone_number], text: location.address, thread: true})
 	end
 end

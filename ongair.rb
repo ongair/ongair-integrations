@@ -1,6 +1,7 @@
 require 'grape'
 require 'active_record'
 require './models/account'
+require './models/location'
 require 'rubygems'
 require 'zendesk_api'
 require 'open-uri'
@@ -173,6 +174,12 @@ module Ongair
       post :status_change do
         # puts "<><><><><> #{params}"
         # post to Ongair so that a conversation can be closed when a ticket is closed
+      end
+    end
+
+    resource :locations do
+      post do
+        Location.find_or_create_by!(address: params[:address], latitude: params[:latitude].to_f, longitude: params[:longitude].to_f, account: account)
       end
     end
 
