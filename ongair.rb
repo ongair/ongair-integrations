@@ -180,6 +180,7 @@ module Ongair
     resource :locations do
       post do
         Location.find_or_create_by!(address: params[:address], latitude: params[:latitude].to_f, longitude: params[:longitude].to_f, account: account)
+        {success: true}
       end
     end
 
