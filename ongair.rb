@@ -74,9 +74,9 @@ module Ongair
         
         conditions = {all: [{field: "update_type", operator: "is", value: "Change"}, {field: "comment_is_public", operator: "is", value: "requester_can_see_comment"}, {field: "comment_is_public", operator: "is", value: "true"}]}
         target_url = "http://41.242.1.46/api/notifications?ticket={{ticket.id}}&account=#{a.ongair_phone_number}"
-        target = Zendesk.create_target(a, "Ongair", target_url, "comment", "POST")
+        target = Zendesk.create_target(a, "Ongair - Ticket commented on", target_url, "comment", "POST")
         actions = [{field: "notification_target", value: [target.id, "{{ticket.latest_comment}}"]}]
-        Zendesk.create_trigger(a, "Ticket commented on", conditions, actions)
+        Zendesk.create_trigger(a, "Ongair - Ticket commented on", conditions, actions)
 
         # Trigger and action for ticket status changes
 
@@ -84,8 +84,38 @@ module Ongair
         target_url = "http://41.242.1.46/api/tickets/status_change?ticket={{ticket.id}}&account=#{a.ongair_phone_number}&status={{ticket.status}}"
         target = Zendesk.create_target(a, "Ongair - Ticket status changed", target_url, "comment", "POST")
         actions = [{field: "notification_target", value: [target.id, "The status of your ticket has been changed to {{ticket.status}}"]}]
-        Zendesk.create_trigger(a, "Ticket status changed", conditions, actions)
+        Zendesk.create_trigger(a, "Ongair - Ticket status changed", conditions, actions)
         { success: true }
+      end
+    end
+
+    def create_ticket
+      tickets = Zendesk.find_tickets_by_phone_number_and_status account, params[:phone_number], "open"
+      user = Zendesk.create_user(Zendesk.client(account), params[:name], params[:phone_number])
+      if tickets.size == 0
+        ticket_field = Zendesk.find_or_create_ticket_field account, "text", "Phone number"
+        if params[:notification_type] == "MessageReceived"
+          Zendesk.create_ticket(account, "#{params[:phone_number]}##{tickets.size + 1}", params[:text], user.id, user.id, "Urgent",
+            [{"id"=>ticket_field["id"], "value"=>params[:phone_number]}])
+        elsif params[:notification_type] == "ImageReceived"
+          ticket = Zendesk.create_ticket(account, "#{params[:phone_number]}##{tickets.size + 1}", "Image attached", user.id, user.id, "Urgent",
+            [{"id"=>ticket_field["id"], "value"=>params[:phone_number]}])
+          download_file
+          ticket.comment.uploads << "image.png"
+          ticket.save
+          `rm image.png`
+        end
+      else
+        ticket = tickets.last
+        if params[:notification_type] == "MessageReceived"
+          ticket.comment = { :value => params[:text], :author_id => user.id, public: false }
+        elsif params[:notification_type] == "ImageReceived"
+          ticket.comment = { :value => "Image attached", :author_id => user.id, public: false }
+          download_file
+          ticket.comment.uploads << "image.png"
+        end
+        ticket.save!
+        `rm image.png`
       end
     end
 
@@ -116,32 +146,10 @@ module Ongair
       post do
         logger.info "Params #{params}"
         puts "Params #{params}"
-        tickets = Zendesk.find_tickets_by_phone_number_and_status account, params[:phone_number], "open"
-        user = Zendesk.create_user(Zendesk.client(account), params[:name], params[:phone_number])
-        if tickets.size == 0
-          ticket_field = Zendesk.find_or_create_ticket_field account, "text", "Phone number"
-          if params[:notification_type] == "MessageReceived"
-            Zendesk.create_ticket(account, "#{params[:phone_number]}##{tickets.size + 1}", params[:text], user.id, user.id, "Urgent",
-              [{"id"=>ticket_field["id"], "value"=>params[:phone_number]}])
-          elsif params[:notification_type] == "ImageReceived"
-            ticket = Zendesk.create_ticket(account, "#{params[:phone_number]}##{tickets.size + 1}", "Image attached", user.id, user.id, "Urgent",
-              [{"id"=>ticket_field["id"], "value"=>params[:phone_number]}])
-            download_file
-            ticket.comment.uploads << "image.png"
-            ticket.save
-            `rm image.png`
-          end
+        if params[:notification_type] == "LocationReceived"
+          WhatsApp.send_location
         else
-          ticket = tickets.last
-          if params[:notification_type] == "MessageReceived"
-            ticket.comment = { :value => params[:text], :author_id => user.id, public: false }
-          elsif params[:notification_type] == "ImageReceived"
-            ticket.comment = { :value => "Image attached", :author_id => user.id, public: false }
-            download_file
-            ticket.comment.uploads << "image.png"
-          end
-          ticket.save!
-          `rm image.png`
+          create_ticket
         end
       end
 

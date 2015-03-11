@@ -6,6 +6,7 @@ gem 'grape'
 gem "zendesk_api"
 gem "httparty"
 gem 'rake'
+gem 'geocoder'
 
 group :development do 
 	gem 'sqlite3'
@@ -14,4 +15,12 @@ end
 
 group :production do
 	gem 'mysql2'
+end
+
+group :test do
+	gem 'minitest-rails'
+	gem 'minitest-rails-capybara'
+	gem 'minitest-colorize'
+	gem 'minitest-focus'
+	gem 'minitest-spec-rails'
 end
