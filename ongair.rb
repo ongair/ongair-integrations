@@ -149,7 +149,7 @@ module Ongair
         puts "Params #{params}"
         if params[:notification_type] == "LocationReceived"
           WhatsApp.send_location params[:latitude], params[:longitude], params[:phone_number]
-        else
+        elsif params[:notification_type] == "MessageReceived" || params[:notification_type] == "ImageReceived"
           create_ticket
         end
       end
