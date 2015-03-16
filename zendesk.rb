@@ -63,7 +63,7 @@ class Zendesk
     tickets = []
     self.client(account).tickets.all do |ticket|
       if !ticket["custom_fields"].empty?
-        if ticket["custom_fields"][0].value == phone_number && (ticket.status == status || ticket.status == "pending")
+        if ticket["custom_fields"][0].value == phone_number && (ticket.status == status || ticket.status == "pending" || ticket.status == "new")
           tickets << ticket
         end
       end
