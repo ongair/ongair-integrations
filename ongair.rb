@@ -28,7 +28,7 @@ module Ongair
       end
 
       def create_ticket
-        tickets = Zendesk.find_tickets_by_phone_number_and_status account, params[:phone_number], "open"
+        tickets = Zendesk.find_unsolved_tickets_for_phone_number account, params[:phone_number]
         user = Zendesk.create_user(Zendesk.client(account), params[:name], params[:phone_number])
         if tickets.size == 0
           ticket_field = Zendesk.find_or_create_ticket_field account, "text", "Phone number"
