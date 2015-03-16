@@ -97,7 +97,7 @@ module Ongair
       end
       post do
         # authenticate!
-        a = Account.create! zendesk_url: params[:zendesk_url], zendesk_access_token: params[:zendesk_access_token],
+        a = Account.find_or_create_by! zendesk_url: params[:zendesk_url], zendesk_access_token: params[:zendesk_access_token],
          zendesk_user: params[:zendesk_user], ongair_token: params[:ongair_token], ongair_phone_number: params[:ongair_phone_number],
          ongair_url: params[:ongair_url]
 
