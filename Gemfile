@@ -7,6 +7,7 @@ gem "zendesk_api"
 gem "httparty"
 gem 'rake'
 gem 'geocoder'
+gem 'napa'
 
 group :development do 
 	gem 'sqlite3'
