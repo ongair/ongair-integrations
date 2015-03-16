@@ -212,7 +212,7 @@ module Ongair
         # requires :message, type: String
       end
       post do
-        phone_number = Zendesk.find_ticket(account, params[:ticket].to_i)["custom_fields"][0].value
+        phone_number = Zendesk.find_phone_number_for_ticket(account, params[:ticket].to_i)
         WhatsApp.send_message account, phone_number, params[:comment]
       end
     end
