@@ -85,6 +85,19 @@ class Zendesk
     field
   end
 
+  def self.find_phone_number_for_ticket account, ticket_id
+    ticket = self.find_ticket(account, ticket_id)
+    phone_number = nil
+    if !ticket.nil?
+      ticket["custom_fields"].each do |f|
+        if f.id == self.find_ticket_field(account, "Phone number").id
+          phone_number = f.value
+        end
+      end
+    end
+    phone_number
+  end
+
   def self.find_or_create_ticket_field account, type, title
     field = ""
     if self.find_ticket_field(account, title).nil?
