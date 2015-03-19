@@ -54,7 +54,14 @@ module Ongair
           end
           ticket.save!
           `rm image.png`
+          response = nil
+          if ticket
+            response = {success: true}
+          else
+            response = {success: false}
+          end
         end
+        response
       end
 
       def download_file
@@ -84,6 +91,14 @@ module Ongair
       route_param :ongair_phone_number do
         get do
           Account.find_by(ongair_phone_number: params[:account])
+        end
+      end
+
+      desc "Return all accounts"
+      route_param :ongair_phone_number do
+        get :accounts do
+          Account.all
+          {accounts: 3}
         end
       end
 
@@ -178,7 +193,7 @@ module Ongair
       desc "Ticket status change notifications"
 
       post :status_change do
-        # puts "<><><><><> #{params}"
+        {success: true}
         # post to Ongair so that a conversation can be closed when a ticket is closed
       end
     end
