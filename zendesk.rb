@@ -146,4 +146,40 @@ class Zendesk
   def self.create_target account, title, target_url, attribute, method
     ZendeskAPI::Target.create(self.client(account), {type: "url_target", title: title, target_url: target_url, attribute: attribute, method: method})   
   end
+
+  def self.download_file image
+    open('image.png', 'wb') do |file|
+      file << open(image).read
+    end
+  end
+
+  def self.create_ticket params={}, account
+    tickets = Zendesk.find_unsolved_tickets_for_phone_number account, params[:phone_number]
+    user = Zendesk.create_user(Zendesk.client(account), params[:name], params[:phone_number])
+    if tickets.size == 0
+      ticket_field = Zendesk.find_or_create_ticket_field account, "text", "Phone number"
+      if params[:notification_type] == "MessageReceived"
+        Zendesk.create_ticket(account, "#{params[:phone_number]}##{tickets.size + 1}", params[:text], user.id, user.id, "Urgent",
+          [{"id"=>ticket_field["id"], "value"=>params[:phone_number]}])
+      elsif params[:notification_type] == "ImageReceived"
+        ticket = Zendesk.create_ticket(account, "#{params[:phone_number]}##{tickets.size + 1}", "Image attached", user.id, user.id, "Urgent",
+          [{"id"=>ticket_field["id"], "value"=>params[:phone_number]}])
+        self.download_file params[:image]
+        ticket.comment.uploads << "image.png"
+        ticket.save
+        `rm image.png`
+      end
+    else
+      ticket = tickets.last
+      if params[:notification_type] == "MessageReceived"
+        ticket.comment = { :value => params[:text], :author_id => user.id, public: false }
+      elsif params[:notification_type] == "ImageReceived"
+        ticket.comment = { :value => "Image attached", :author_id => user.id, public: false }
+        self.download_file params[:image]
+        ticket.comment.uploads << "image.png"
+      end
+      ticket.save!
+      `rm image.png`
+    end
+  end
 end

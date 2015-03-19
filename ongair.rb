@@ -27,49 +27,6 @@ module Ongair
         Account.find_by(ongair_phone_number: params[:account])
       end
 
-      def create_ticket
-        tickets = Zendesk.find_unsolved_tickets_for_phone_number account, params[:phone_number]
-        user = Zendesk.create_user(Zendesk.client(account), params[:name], params[:phone_number])
-        if tickets.size == 0
-          ticket_field = Zendesk.find_or_create_ticket_field account, "text", "Phone number"
-          if params[:notification_type] == "MessageReceived"
-            Zendesk.create_ticket(account, "#{params[:phone_number]}##{tickets.size + 1}", params[:text], user.id, user.id, "Urgent",
-              [{"id"=>ticket_field["id"], "value"=>params[:phone_number]}])
-          elsif params[:notification_type] == "ImageReceived"
-            ticket = Zendesk.create_ticket(account, "#{params[:phone_number]}##{tickets.size + 1}", "Image attached", user.id, user.id, "Urgent",
-              [{"id"=>ticket_field["id"], "value"=>params[:phone_number]}])
-            download_file
-            ticket.comment.uploads << "image.png"
-            ticket.save
-            `rm image.png`
-          end
-        else
-          ticket = tickets.last
-          if params[:notification_type] == "MessageReceived"
-            ticket.comment = { :value => params[:text], :author_id => user.id, public: false }
-          elsif params[:notification_type] == "ImageReceived"
-            ticket.comment = { :value => "Image attached", :author_id => user.id, public: false }
-            download_file
-            ticket.comment.uploads << "image.png"
-          end
-          ticket.save!
-          `rm image.png`
-          response = nil
-          if ticket
-            response = {success: true}
-          else
-            response = {success: false}
-          end
-        end
-        response
-      end
-
-      def download_file
-        open('image.png', 'wb') do |file|
-          file << open(params[:image]).read
-        end
-      end
-
       def logger
         API.logger
       end
@@ -91,14 +48,6 @@ module Ongair
       route_param :ongair_phone_number do
         get do
           Account.find_by(ongair_phone_number: params[:account])
-        end
-      end
-
-      desc "Return all accounts"
-      route_param :ongair_phone_number do
-        get :accounts do
-          Account.all
-          {accounts: 3}
         end
       end
 
@@ -171,7 +120,7 @@ module Ongair
         if params[:notification_type] == "LocationReceived"
           WhatsApp.send_location params[:latitude], params[:longitude], params[:phone_number]
         elsif params[:notification_type] == "MessageReceived" || params[:notification_type] == "ImageReceived"
-          create_ticket
+          Zendesk.create_ticket params, account
         end
       end
 
@@ -193,7 +142,7 @@ module Ongair
       desc "Ticket status change notifications"
 
       post :status_change do
-        {success: true}
+        puts "<><><><><> #{params}"
         # post to Ongair so that a conversation can be closed when a ticket is closed
       end
     end
