@@ -19,9 +19,12 @@ group :production do
 end
 
 group :test do
-	gem 'minitest-rails'
-	gem 'minitest-rails-capybara'
-	gem 'minitest-colorize'
-	gem 'minitest-focus'
-	gem 'minitest-spec-rails'
+	gem 'airborne'
+	gem 'rspec'
+	gem 'webmock'
+	# gem 'minitest-rails'
+	# gem 'minitest-rails-capybara'
+	# gem 'minitest-colorize'
+	# gem 'minitest-focus'
+	# gem 'minitest-spec-rails'
 end
