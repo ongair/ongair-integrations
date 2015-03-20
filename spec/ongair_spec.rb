@@ -13,7 +13,8 @@ describe 'The Ongair Integrations API' do
       post '/api/accounts', { ongair_phone_number: '2541234567890' }
       expect_json({error:"zendesk_url is missing, zendesk_access_token is missing, ongair_token is missing, ongair_url is missing"})
 
-      post '/api/accounts', { ongair_phone_number: '2541234567890',  zendesk_url: 'dsfsd'}
+      post '/api/accounts', { ongair_phone_number: '254123456789',  zendesk_url: 'https://test.zendesk.com', zendesk_access_token: '1234567890', ongair_token: '087654321', ongair_url: 'http://app.ongair.im', zendesk_user: 'test@domain.com' }
+      expect_json({ success: true })
     end
   end
 

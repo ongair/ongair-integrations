@@ -1,4 +1,5 @@
 require 'airborne'
+require 'webmock/rspec'
 require_relative '../ongair.rb'
 
 Airborne.configure do |config|
@@ -6,3 +7,4 @@ Airborne.configure do |config|
 end
 
 # disable web connect
+WebMock.disable_net_connect!
