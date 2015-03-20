@@ -153,7 +153,7 @@ class Zendesk
     end
   end
 
-  def self.create_ticket params={}, account
+  def self.create_ticket params, account
     tickets = Zendesk.find_unsolved_tickets_for_phone_number account, params[:phone_number]
     user = Zendesk.create_user(Zendesk.client(account), params[:name], params[:phone_number])
     if tickets.size == 0
@@ -181,5 +181,33 @@ class Zendesk
       ticket.save!
       `rm image.png`
     end
+  end
+
+  def self.setup_account params
+    a = Account.find_or_create_by! zendesk_url: params[:zendesk_url], zendesk_access_token: params[:zendesk_access_token],
+     zendesk_user: params[:zendesk_user], ongair_token: params[:ongair_token], ongair_phone_number: params[:ongair_phone_number],
+     ongair_url: params[:ongair_url]
+
+    # Trigger and action for ticket updates
+    
+    conditions = {all: [{field: "update_type", operator: "is", value: "Change"}, {field: "comment_is_public", operator: "is", value: "requester_can_see_comment"}, {field: "comment_is_public", operator: "is", value: "true"}]}
+    target_url = "http://41.242.1.46/api/notifications?ticket={{ticket.id}}&account=#{a.ongair_phone_number}"
+    target = Zendesk.create_target(a, "Ongair - Ticket commented on", target_url, "comment", "POST")
+    actions = [{field: "notification_target", value: [target.id, "{{ticket.latest_comment}}"]}]
+    Zendesk.create_trigger(a, "Ongair - Ticket commented on", conditions, actions)
+
+    # Trigger for ticket creation auto responder
+
+    conditions = {all: [{field: "update_type", operator: "is", value: "Create"}, {field: "status", operator: "is_not", value: "solved"}], any: []}
+    actions = [{field: "notification_target", value: [target.id, "Your request has been received and is being reviewed by our support staff.\n\nTo add additional comments, reply to this message."]}]
+    Zendesk.create_trigger(a, "Ongair - Notify requester of received request via WhatsApp", conditions, actions)
+
+    # Trigger and action for ticket status changes
+
+    conditions = {all: [{field: "status", operator: "changed", value: nil}], any: []}
+    target_url = "http://41.242.1.46/api/tickets/status_change?ticket={{ticket.id}}&account=#{a.ongair_phone_number}&status={{ticket.status}}"
+    target = Zendesk.create_target(a, "Ongair - Ticket status changed", target_url, "comment", "POST")
+    actions = [{field: "notification_target", value: [target.id, "The status of your ticket has been changed to {{ticket.status}}"]}]
+    Zendesk.create_trigger(a, "Ongair - Ticket status changed", conditions, actions)
   end
 end
