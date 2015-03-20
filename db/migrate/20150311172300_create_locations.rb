@@ -6,7 +6,7 @@ class CreateLocations < ActiveRecord::Migration
       t.float :longitude
       t.references :account, index: true
 
-      t.timestamps
+      t.timestamps null: true
     end
   end
 end

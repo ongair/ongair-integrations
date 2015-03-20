@@ -8,7 +8,7 @@ class CreateAccounts < ActiveRecord::Migration
       t.string :ongair_phone_number
       t.string :ongair_url
 
-      t.timestamps
+      t.timestamps null: true
     end
   end
 end
