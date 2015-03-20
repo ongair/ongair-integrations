@@ -196,13 +196,13 @@ class Zendesk
     actions = [{field: "notification_target", value: [target.id, "{{ticket.latest_comment}}"]}]
     Zendesk.create_trigger(a, "Ongair - Ticket commented on", conditions, actions)
 
-    # Trigger for ticket creation auto responder
+    # # Trigger for ticket creation auto responder
 
     conditions = {all: [{field: "update_type", operator: "is", value: "Create"}, {field: "status", operator: "is_not", value: "solved"}], any: []}
     actions = [{field: "notification_target", value: [target.id, "Your request has been received and is being reviewed by our support staff.\n\nTo add additional comments, reply to this message."]}]
     Zendesk.create_trigger(a, "Ongair - Notify requester of received request via WhatsApp", conditions, actions)
 
-    # Trigger and action for ticket status changes
+    # # Trigger and action for ticket status changes
 
     conditions = {all: [{field: "status", operator: "changed", value: nil}], any: []}
     target_url = "http://41.242.1.46/api/tickets/status_change?ticket={{ticket.id}}&account=#{a.ongair_phone_number}&status={{ticket.status}}"

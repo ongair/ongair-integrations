@@ -91,8 +91,8 @@ module Ongair
       #   # requires :priority, type: String
       # end
       post do
-        logger.info "Params #{params}"
-        puts "Params #{params}"
+        # logger.info "Params #{params}"
+        # puts "Params #{params}"
         if params[:notification_type] == "LocationReceived"
           WhatsApp.send_location params[:latitude], params[:longitude], params[:phone_number]
         elsif params[:notification_type] == "MessageReceived" || params[:notification_type] == "ImageReceived"
