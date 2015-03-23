@@ -8,3 +8,7 @@ end
 
 # disable web connect
 WebMock.disable_net_connect!
+
+# fixture_path = "fixtures/"
+# use_transactional_fixtures = true
+# global_fixtures = :all

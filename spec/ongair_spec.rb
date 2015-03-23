@@ -58,12 +58,59 @@ describe 'The Ongair Integrations API' do
   end
 
   describe 'Ticket creation' do
-    # it 'creates ZenDesk ticket' do
-    #   stub_request(:get, "https://muadh24%40gmail.com%2Ftoken:8OHrRib1QjB0lZN7GLreXv8fQNFp8Y7Ct6qhUx0E@muaadh.zendesk.com/api/v2/tickets").
-    #            with(:headers => {'Accept'=>'application/json', 'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 'User-Agent'=>'ZendeskAPI API 1.5.1'}).
-    #            to_return(:status => 200, :body => "", :headers => {})
-    #   post '/api/tickets', { account: '255686766788', phone_number: '254722881199', name: 'jsk', text: 'Hi', notification_type: 'MessageReceived'}
-    #   puts response.body
-    # end
+    it 'creates ZenDesk ticket' do
+      
+      email = 'test@domain.com'      
+      token = '1234567890'
+      zendesk_url = 'test.zendesk.com/api/v2'
+      ongair_phone_number = '254123456789'
+
+      stub_request(:get, "https://#{CGI.escape(email + '/')}token:#{token}@#{zendesk_url}/tickets").
+               with(:headers => {'Accept'=>'application/json', 'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 'User-Agent'=>'ZendeskAPI API 1.5.1'}).
+               to_return(:status => 200, :body => "", :headers => {})
+
+      stub_request(:get, "https://#{CGI.escape(email + '/')}token:#{token}@#{zendesk_url}/users").
+               with(:headers => {'Accept'=>'application/json', 'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 'User-Agent'=>'ZendeskAPI API 1.5.1'}).
+               to_return(:status => 200, :body => "", :headers => {})
+
+      stub_request(:post, "https://#{CGI.escape(email + '/')}token:#{token}@#{zendesk_url}/users").
+               with(:body => "{\"user\":{\"name\":\"jsk\",\"phone\":\"254722881199\"}}",
+                    :headers => {'Accept'=>'application/json', 'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 'Content-Type'=>'application/json', 'User-Agent'=>'ZendeskAPI API 1.5.1'}).
+               to_return(:status => 200, :body => "", :headers => {})
+
+      stub_request(:get, "https://#{CGI.escape(email + '/')}token:#{token}@#{zendesk_url}/ticket_fields").
+               with(:headers => {'Accept'=>'application/json', 'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 'User-Agent'=>'ZendeskAPI API 1.5.1'}).
+               to_return(:status => 200, :body => "", :headers => {})
+
+      stub_request(:post, "https://#{CGI.escape(email + '/')}token:#{token}@#{zendesk_url}/ticket_fields").
+               with(:body => "{\"ticket_field\":{\"type\":\"text\",\"title\":\"Phone number\"}}",
+                    :headers => {'Accept'=>'application/json', 'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 'Content-Type'=>'application/json', 'User-Agent'=>'ZendeskAPI API 1.5.1'}).
+               to_return(:status => 200, :body => "", :headers => {})
+
+      stub_request(:post, "https://#{CGI.escape(email + '/')}token:#{token}@#{zendesk_url}/tickets").
+               with(:body => "{\"ticket\":{\"subject\":\"254722881199#1\",\"comment\":{\"value\":\"Hi\"},\"submitter_id\":null,\"requester_id\":null,\"priority\":\"Urgent\",\"custom_fields\":[{\"id\":null,\"value\":\"254722881199\"}]}}",
+                    :headers => {'Accept'=>'application/json', 'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 'Content-Type'=>'application/json', 'User-Agent'=>'ZendeskAPI API 1.5.1'}).
+               to_return(:status => 200, :body => "", :headers => {})
+
+      stub_request(:post, "https://#{CGI.escape(email + '/')}token:#{token}@#{zendesk_url}/tickets").
+               with(:body => "{\"ticket\":{\"subject\":\"254722881199#1\",\"comment\":{\"value\":\"Image attached\"},\"submitter_id\":null,\"requester_id\":null,\"priority\":\"Urgent\",\"custom_fields\":[{\"id\":null,\"value\":\"254722881199\"}]}}",
+                    :headers => {'Accept'=>'application/json', 'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 'Content-Type'=>'application/json', 'User-Agent'=>'ZendeskAPI API 1.5.1'}).
+               to_return(:status => 200, :body => "", :headers => {})
+
+      # file = Zendesk.download_file('ongair.png')
+      # file = "-------------RubyMultipartPost\r\nContent-Disposition: form-data; name=\"filename\"\r\n\r\nimage.png\r\n-------------
+      # RubyMultipartPost\r\nContent-Disposition: form-data; name=\"uploaded_data\"; filename=\"image.png\"\r\nContent-Length: 9533
+      # \r\nContent-Type: image/png\r\nContent-Transfer-Encoding: binary\r\n\r\n#{File.binread('ongair.png')}
+      # \r\n-------------RubyMultipartPost--\r\n\r\n"
+
+      # stub_request(:post, "https://#{CGI.escape(email + '/')}token:#{token}@#{zendesk_url}/uploads").
+      #          with(:body => file, 
+      #               :headers => {'Accept'=>'application/json', 'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 'Content-Length'=>'9857', 'Content-Type'=>'multipart/form-data; boundary=-----------RubyMultipartPost', 'User-Agent'=>'ZendeskAPI API 1.5.1'}).
+      #                        to_return(:status => 200, :body => "", :headers => {})
+
+      post '/api/tickets', { account: '254123456789', phone_number: '254722881199', name: 'jsk', text: 'Hi', notification_type: 'MessageReceived'}
+      # post '/api/tickets', { account: '255686766788', phone_number: '254722881199', name: 'jsk', text: 'Hi', notification_type: 'ImageReceived', image: 'ongair.png'}
+      expect_json({ success: true })
+    end
   end
 end
