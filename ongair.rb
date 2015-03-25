@@ -62,7 +62,7 @@ module Ongair
       post do
         # authenticate!
         Zendesk.setup_account params
-        { success: true }
+        # { success: true }
       end
     end
 

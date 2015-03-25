@@ -59,7 +59,7 @@ describe 'The Ongair Integrations API' do
 
   describe 'Ticket creation' do
     it 'creates ZenDesk ticket' do
-      
+
       email = 'test@domain.com'      
       token = '1234567890'
       zendesk_url = 'test.zendesk.com/api/v2'
@@ -97,19 +97,19 @@ describe 'The Ongair Integrations API' do
                     :headers => {'Accept'=>'application/json', 'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 'Content-Type'=>'application/json', 'User-Agent'=>'ZendeskAPI API 1.5.1'}).
                to_return(:status => 200, :body => "", :headers => {})
 
-      # file = Zendesk.download_file('ongair.png')
+      # Zendesk.download_file('bird.jpeg')
       # file = "-------------RubyMultipartPost\r\nContent-Disposition: form-data; name=\"filename\"\r\n\r\nimage.png\r\n-------------
       # RubyMultipartPost\r\nContent-Disposition: form-data; name=\"uploaded_data\"; filename=\"image.png\"\r\nContent-Length: 9533
-      # \r\nContent-Type: image/png\r\nContent-Transfer-Encoding: binary\r\n\r\n#{File.binread('ongair.png')}
+      # \r\nContent-Type: image/png\r\nContent-Transfer-Encoding: binary\r\n\r\n#{File.binread('bird.jpeg')}
       # \r\n-------------RubyMultipartPost--\r\n\r\n"
 
       # stub_request(:post, "https://#{CGI.escape(email + '/')}token:#{token}@#{zendesk_url}/uploads").
-      #          with(:body => file, 
-      #               :headers => {'Accept'=>'application/json', 'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 'Content-Length'=>'9857', 'Content-Type'=>'multipart/form-data; boundary=-----------RubyMultipartPost', 'User-Agent'=>'ZendeskAPI API 1.5.1'}).
+      #          with(:body => File.binread('bird.jpeg'), 
+      #               :headers => {}).
       #                        to_return(:status => 200, :body => "", :headers => {})
 
       post '/api/tickets', { account: '254123456789', phone_number: '254722881199', name: 'jsk', text: 'Hi', notification_type: 'MessageReceived'}
-      # post '/api/tickets', { account: '255686766788', phone_number: '254722881199', name: 'jsk', text: 'Hi', notification_type: 'ImageReceived', image: 'ongair.png'}
+      # post '/api/tickets', { account: '254123456789', phone_number: '254722881199', name: 'jsk', text: 'Hi', notification_type: 'ImageReceived', image: 'bird.jpeg'}
       expect_json({ success: true })
     end
   end
