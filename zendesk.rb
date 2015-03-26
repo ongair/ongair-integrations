@@ -74,7 +74,7 @@ class Zendesk
   def self.find_unsolved_tickets_for_phone_number account, phone_number
     tickets = []
     self.client(account).tickets.all do |ticket|
-      if self.find_phone_number_for_ticket(account, ticket.id) == phone_number && ticket.status != "solved"
+      if self.find_phone_number_for_ticket(account, ticket.id) == phone_number && ticket.status == "open" || ticket.status == "pending" || ticket.status == "new"
         tickets << ticket
       end
     end
