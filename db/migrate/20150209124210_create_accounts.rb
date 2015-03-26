@@ -7,6 +7,7 @@ class CreateAccounts < ActiveRecord::Migration
       t.string :ongair_token
       t.string :ongair_phone_number
       t.string :ongair_url
+      t.string :zendesk_ticket_auto_responder
 
       t.timestamps null: true
     end

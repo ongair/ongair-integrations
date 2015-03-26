@@ -170,6 +170,9 @@ class Zendesk
         ticket.save
         `rm image.png`
       end
+      if !ticket.nil?
+        WhatsApp.send(params[:phone_number], account.zendesk_ticket_auto_responder)
+      end
     else
       ticket = tickets.last
       if params[:notification_type] == "MessageReceived"
@@ -193,7 +196,8 @@ class Zendesk
   def self.setup_account params
     a = Account.find_or_create_by! ongair_phone_number: params[:ongair_phone_number]
     a.update(zendesk_url: params[:zendesk_url], zendesk_access_token: params[:zendesk_access_token],
-         zendesk_user: params[:zendesk_user], ongair_token: params[:ongair_token], ongair_url: params[:ongair_url])
+         zendesk_user: params[:zendesk_user], ongair_token: params[:ongair_token], ongair_url: params[:ongair_url], 
+          zendesk_ticket_auto_responder: params[:zendesk_ticket_auto_responder])
 
     # Trigger and action for ticket updates
     
@@ -208,9 +212,9 @@ class Zendesk
 
       # # Trigger for ticket creation auto responder
 
-      conditions = {all: [{field: "update_type", operator: "is", value: "Create"}, {field: "status", operator: "is_not", value: "solved"}], any: []}
-      actions = [{field: "notification_target", value: [target.id, "Your request has been received and is being reviewed by our support staff.\n\nTo add additional comments, reply to this message."]}]
-      Zendesk.create_trigger(a, "Ongair - Notify requester of received request via WhatsApp", conditions, actions)
+      # conditions = {all: [{field: "update_type", operator: "is", value: "Create"}, {field: "status", operator: "is_not", value: "solved"}], any: []}
+      # actions = [{field: "notification_target", value: [target.id, "Your request has been received and is being reviewed by our support staff.\n\nTo add additional comments, reply to this message."]}]
+      # Zendesk.create_trigger(a, "Ongair - Notify requester of received request via WhatsApp", conditions, actions)
 
       # # Trigger and action for ticket status changes
 
