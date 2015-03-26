@@ -61,8 +61,8 @@ module Ongair
       end
       post do
         # authenticate!
-        Zendesk.setup_account params
-        # { success: true }
+        response = Zendesk.setup_account params
+        { response: response }
       end
     end
 
@@ -96,7 +96,8 @@ module Ongair
         if params[:notification_type] == "LocationReceived"
           WhatsApp.send_location params[:latitude], params[:longitude], params[:phone_number]
         elsif params[:notification_type] == "MessageReceived" || params[:notification_type] == "ImageReceived"
-          Zendesk.create_ticket params, account
+          response = Zendesk.create_ticket params, account
+          { response: response }
         end
       end
 
