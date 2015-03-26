@@ -171,7 +171,7 @@ class Zendesk
         `rm image.png`
       end
       if !ticket.nil?
-        WhatsApp.send(params[:phone_number], account.zendesk_ticket_auto_responder)
+        WhatsApp.send_message(account, params[:phone_number], account.zendesk_ticket_auto_responder)
       end
     else
       ticket = tickets.last
