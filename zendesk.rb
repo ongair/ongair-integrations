@@ -155,16 +155,19 @@ class Zendesk
 
   def self.create_ticket params, account
     ticket = nil
-    tickets = Zendesk.find_unsolved_tickets_for_phone_number account, params[:phone_number]
+    # tickets = Zendesk.find_unsolved_tickets_for_phone_number account, params[:phone_number]
+    tickets = Ticket.unsolved_zendesk_tickets account, params[:phone_number]
     user = Zendesk.create_user(Zendesk.client(account), params[:name], params[:phone_number])
     if tickets.size == 0
       ticket_field = Zendesk.find_or_create_ticket_field account, "text", "Phone number"
       if params[:notification_type] == "MessageReceived"
         ticket = self.create_zendesk_ticket(account, "#{params[:phone_number]}##{tickets.size + 1}", params[:text], user.id, user.id, "Urgent",
           [{"id"=>ticket_field["id"], "value"=>params[:phone_number]}])
+        Ticket.find_or_create_by(account: account, phone_number: params[:phone_number], ticket_id: ticket.id, source: "Zendesk", status: ticket.status)
       elsif params[:notification_type] == "ImageReceived"
         ticket = self.create_zendesk_ticket(account, "#{params[:phone_number]}##{tickets.size + 1}", "Image attached", user.id, user.id, "Urgent",
           [{"id"=>ticket_field["id"], "value"=>params[:phone_number]}])
+        Ticket.find_or_create_by(account: account, phone_number: params[:phone_number], ticket_id: ticket.id, source: "Zendesk", status: ticket.status)
         self.download_file params[:image]
         ticket.comment.uploads << "image.png"
         ticket.save
@@ -174,7 +177,7 @@ class Zendesk
         WhatsApp.send_message(account, params[:phone_number], account.zendesk_ticket_auto_responder)
       end
     else
-      ticket = tickets.last
+      ticket = self.find_ticket account, tickets.last.ticket_id
       if params[:notification_type] == "MessageReceived"
         ticket.comment = { :value => params[:text], :author_id => user.id, public: false }
       elsif params[:notification_type] == "ImageReceived"
@@ -202,7 +205,7 @@ class Zendesk
     # Trigger and action for ticket updates
     
     conditions = {all: [{field: "update_type", operator: "is", value: "Change"}, {field: "comment_is_public", operator: "is", value: "requester_can_see_comment"}, {field: "comment_is_public", operator: "is", value: "true"}]}
-    target_url = "http://41.242.1.46/api/notifications?ticket={{ticket.id}}&account=#{a.ongair_phone_number}"
+    target_url = "http://41.242.1.46/api/notifications?ticket={{ticket.id}}&account=#{a.ongair_phone_number}&comment={{ticket.latest_comment}}"
     target = Zendesk.create_target(a, "Ongair - Ticket commented on", target_url, "comment", "POST")
     if target.nil?
       response = {error: "Could not be authenticated!"}

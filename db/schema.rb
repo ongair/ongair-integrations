@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150311172300) do
+ActiveRecord::Schema.define(version: 20150327155700) do
 
   create_table "accounts", force: :cascade do |t|
     t.string   "zendesk_url"
@@ -20,6 +20,7 @@ ActiveRecord::Schema.define(version: 20150311172300) do
     t.string   "ongair_token"
     t.string   "ongair_phone_number"
     t.string   "ongair_url"
+    t.string   "zendesk_ticket_auto_responder"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
@@ -34,5 +35,17 @@ ActiveRecord::Schema.define(version: 20150311172300) do
   end
 
   add_index "locations", ["account_id"], name: "index_locations_on_account_id"
+
+  create_table "tickets", force: :cascade do |t|
+    t.string   "phone_number"
+    t.string   "ticket_id"
+    t.string   "status"
+    t.string   "source"
+    t.integer  "account_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "tickets", ["account_id"], name: "index_tickets_on_account_id"
 
 end

@@ -2,6 +2,7 @@ require 'grape'
 require 'active_record'
 require './models/account'
 require './models/location'
+require './models/ticket'
 require 'rubygems'
 require 'zendesk_api'
 require 'open-uri'
@@ -119,7 +120,10 @@ module Ongair
       desc "Ticket status change notifications"
 
       post :status_change do
-        puts "<><><><><> #{params}"
+        if params[:ticket]
+          ticket = Ticket.find_by(ticket_id: params[:ticket])
+          ticket.update(status: params[:status].downcase) if !ticket.nil?
+        end
         # post to Ongair so that a conversation can be closed when a ticket is closed
       end
     end
