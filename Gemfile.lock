@@ -42,6 +42,7 @@ GEM
       ice_nine (~> 0.11.0)
       thread_safe (~> 0.3, >= 0.3.1)
     builder (3.2.2)
+    coderay (1.1.0)
     coercible (1.0.0)
       descendants_tracker (~> 0.0.1)
     crack (0.4.2)
@@ -86,6 +87,7 @@ GEM
       multi_json (>= 1.8.4)
     loofah (2.0.1)
       nokogiri (>= 1.5.9)
+    method_source (0.8.2)
     mime-types (2.4.3)
     mini_portile (0.6.2)
     minitest (5.5.1)
@@ -112,6 +114,10 @@ GEM
       mini_portile (~> 0.6.0)
     octokit (3.8.0)
       sawyer (~> 0.6.0, >= 0.5.3)
+    pry (0.10.1)
+      coderay (~> 1.1.0)
+      method_source (~> 0.8.1)
+      slop (~> 3.4)
     rack (1.6.0)
     rack-accept (0.4.5)
       rack (>= 0.4)
@@ -157,6 +163,11 @@ GEM
     sawyer (0.6.0)
       addressable (~> 2.3.5)
       faraday (~> 0.8, < 0.10)
+    simplecov (0.7.1)
+      multi_json (~> 1.0)
+      simplecov-html (~> 0.7.1)
+    simplecov-html (0.7.1)
+    slop (3.6.0)
     sqlite3 (1.3.10)
     statsd-ruby (1.2.1)
     thor (0.19.1)
@@ -193,8 +204,10 @@ DEPENDENCIES
   httparty
   mysql2
   napa
+  pry
   rake
   rspec
+  simplecov
   sqlite3
   webmock
   zendesk_api

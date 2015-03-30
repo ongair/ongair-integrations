@@ -6,14 +6,15 @@ require './models/ticket'
 require 'rubygems'
 require 'zendesk_api'
 require 'open-uri'
+require 'pry'
 
 require_relative 'zendesk'
 require_relative 'whatsapp'
 
-# conf = YAML.load_file('./config/database.yml')
-# ActiveRecord::Base.establish_connection({adapter:  'sqlite3', database: 'db/dev.sqlite3'})
 
 module Ongair
+  include ActiveSupport::Configurable
+
   class API < Grape::API 
     environment = ENV['RACK_ENV'] || 'development'
     dbconfig = YAML.load(File.read('config/database.yml'))
@@ -38,6 +39,12 @@ module Ongair
 
       def authenticate!
         error!('401 Unauthorized', 401) unless current_user
+      end
+    end
+
+    resource :status do
+      get do
+        { version: '1.0', success: true, url: Ongair.config.app_url }
       end
     end
 
@@ -167,3 +174,5 @@ module Ongair
     end
   end
 end
+
+require_relative 'config/environment'

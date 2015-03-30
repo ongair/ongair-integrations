@@ -12,6 +12,7 @@ gem 'napa'
 group :development do 
 	gem 'sqlite3'
   gem 'annotate'
+  gem 'pry'
 end
 
 group :production do
@@ -23,4 +24,5 @@ group :test do
 	gem 'airborne'
 	gem 'rspec'
 	gem 'webmock'
+  gem 'simplecov'
 end

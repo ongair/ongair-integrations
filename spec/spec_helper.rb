@@ -1,5 +1,10 @@
 require 'airborne'
 require 'webmock/rspec'
+require 'simplecov'
+
+# coverage start
+SimpleCov.start
+
 require_relative '../ongair.rb'
 
 Airborne.configure do |config|
