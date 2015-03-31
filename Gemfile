@@ -20,7 +20,6 @@ group :production do
 end
 
 group :test do
-	gem 'sqlite3'
 	gem 'airborne'
 	gem 'rspec'
 	gem 'webmock'
