@@ -3,7 +3,9 @@ require 'webmock/rspec'
 require 'simplecov'
 
 # coverage start
-SimpleCov.start
+SimpleCov.start do
+  add_filter '/spec'
+end
 
 require_relative '../ongair.rb'
 
