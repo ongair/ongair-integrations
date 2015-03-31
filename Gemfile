@@ -13,6 +13,7 @@ group :development do
 	gem 'sqlite3'
   gem 'annotate'
   gem 'pry'
+  gem 'pry-nav'
 end
 
 group :production do
