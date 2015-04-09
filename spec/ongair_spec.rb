@@ -97,6 +97,10 @@ describe 'The Ongair Integrations API' do
                     :headers => {'Accept'=>'application/json', 'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 'Content-Type'=>'application/json', 'User-Agent'=>'ZendeskAPI API 1.5.1'}).
                to_return(:status => 200, :body => "", :headers => {})
 
+      stub_request(:post, "http://app.ongair.im/api/v1/base/send?token=087654321").
+         with(:body => "phone_number=254722881199&text=&thread=true").
+         to_return(:status => 200, :body => "", :headers => {})
+
       # Zendesk.download_file('bird.jpeg')
       # file = "-------------RubyMultipartPost\r\nContent-Disposition: form-data; name=\"filename\"\r\n\r\nimage.png\r\n-------------
       # RubyMultipartPost\r\nContent-Disposition: form-data; name=\"uploaded_data\"; filename=\"image.png\"\r\nContent-Length: 9533
@@ -108,8 +112,7 @@ describe 'The Ongair Integrations API' do
       #               :headers => {}).
       #                        to_return(:status => 200, :body => "", :headers => {})
 
-      post '/api/tickets', { account: '254123456789', phone_number: '254722881199', name: 'jsk', text: 'Hi', notification_type: 'MessageReceived'}
-      # post '/api/tickets', { account: '254123456789', phone_number: '254722881199', name: 'jsk', text: 'Hi', notification_type: 'ImageReceived', image: 'bird.jpeg'}
+      post '/api/tickets', { account: '254123456789', phone_number: '254722881199', name: 'jsk', text: 'Hi', notification_type: 'MessageReceived'}      
       expect_json({ success: true })
     end
   end
