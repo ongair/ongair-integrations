@@ -28,8 +28,10 @@ class Zendesk
       config.retry = true
 
       # Logger prints to STDERR by default, to e.g. print to stdout:
-      require 'logger'
-      config.logger = Logger.new(STDOUT)
+      if ENV['RACK_ENV'] == 'development'
+        require 'logger'
+        config.logger = Logger.new(STDOUT)
+      end
 
       # Changes Faraday adapter
       # config.adapter = :patron
