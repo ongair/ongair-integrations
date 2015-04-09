@@ -3,11 +3,11 @@ require 'cgi'
  
 describe 'The Ongair Integrations API' do
   
-  # it 'Should return the status of the API and version' do    
-  #   get '/api/status'
-  #   expect(response).to_not be(nil)
-  #   expect_json({success: true, version: '1.0'})    
-  # end
+  it 'Should return the status of the API and version' do    
+    get '/api/status'
+    expect(response).to_not be(nil)
+    expect_json({success: true, version: '1.0', url: Ongair.config.app_url })    
+  end
 
   describe 'The ZenDesk Account creation process' do
     it 'Requires a zendesk url to create account' do
@@ -41,6 +41,11 @@ describe 'The Ongair Integrations API' do
 
       stub_request(:post, "https://#{CGI.escape(email + '/')}token:#{token}@#{zendesk_url}/triggers").
          with(:body => "{\"trigger\":{\"title\":\"Ongair - Ticket status changed\",\"conditions\":{\"all\":[{\"field\":\"status\",\"operator\":\"changed\",\"value\":null}],\"any\":[]},\"actions\":[{\"field\":\"notification_target\",\"value\":[null,\"The status of your ticket has been changed to {{ticket.status}}\"]}],\"output\":null}}").
+         to_return(:status => 200, :body => "", :headers => {})
+
+      stub_request(:post, "https://test%40domain.com%2Ftoken:1234567890@test.zendesk.com/api/v2/targets").
+         with(:body => "{\"target\":{\"type\":\"url_target\",\"title\":\"Ongair - Ticket commented on\",\"target_url\":\"http://41.242.1.46/api/notifications?ticket={{ticket.id}}&account=254123456789&comment={{ticket.latest_comment}}\",\"attribute\":\"comment\",\"method\":\"POST\"}}",
+              :headers => {'Accept'=>'application/json', 'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 'Content-Type'=>'application/json', 'User-Agent'=>'ZendeskAPI API 1.5.1'}).
          to_return(:status => 200, :body => "", :headers => {})
 
       post '/api/accounts', { ongair_phone_number: '254123456789',  zendesk_url: "https://#{zendesk_url}", zendesk_access_token: '1234567890', ongair_token: '087654321', ongair_url: 'http://app.ongair.im', zendesk_user: email }
