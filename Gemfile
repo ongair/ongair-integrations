@@ -8,12 +8,12 @@ gem "httparty"
 gem 'rake'
 gem 'geocoder'
 gem 'napa'
+gem 'pry'
+gem 'pry-nav'
 
 group :development do 
 	gem 'sqlite3'
   gem 'annotate'
-  gem 'pry'
-  gem 'pry-nav'
 end
 
 group :production do
