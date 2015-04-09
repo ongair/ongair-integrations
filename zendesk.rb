@@ -6,41 +6,14 @@ class Zendesk
 
   def self.client account
     client = ZendeskAPI::Client.new do |config|
-      # Mandatory:
-
-      config.url = account.zendesk_url # e.g. https://mydesk.zendesk.com/api/v2
-
-      # Basic / Token Authentication
+      config.url = account.zendesk_url
       config.username = account.zendesk_user
-
-      # Choose one of the following depending on your authentication choice
       config.token = account.zendesk_access_token
-      # config.password = ENV['ZENDESK_PASSWORD']
-
-      # OAuth Authentication
-      # config.access_token = zendesk_access_token
-
-      # Optional:
-
-      # Retry uses middleware to notify the user
-      # when hitting the rate limit, sleep automatically,
-      # then retry the request.
       config.retry = true
-
-      # Logger prints to STDERR by default, to e.g. print to stdout:
       if ENV['RACK_ENV'] == 'development'
         require 'logger'
         config.logger = Logger.new(STDOUT)
       end
-
-      # Changes Faraday adapter
-      # config.adapter = :patron
-
-      # Merged with the default client options hash
-      # config.client_options = { :ssl => false }
-
-      # When getting the error 'hostname does not match the server certificate'
-      # use the API at https://yoursubdomain.zendesk.com/api/v2
     end
   end
 
@@ -141,8 +114,6 @@ class Zendesk
 
   def self.create_trigger account, title, conditions={}, actions=[]
     ZendeskAPI::Trigger.create(self.client(account), {title: title, conditions: conditions, actions: actions})
-    # actions = [{field: "notification_target", value: ["20092202", "Ticket {{ticket.id}} has been updated."]}] # Use target as action
-    # ZendeskAPI::Trigger.create(z.self.client(account), {title: "Trigger from web API", conditions: {all: [{field: "status", operator: "is", value: "open"}]}, actions: [{field: "status", value: "solved"}]})
   end
 
   def self.create_target account, title, target_url, attribute, method
@@ -157,7 +128,6 @@ class Zendesk
 
   def self.create_ticket params, account
     ticket = nil
-    # tickets = Zendesk.find_unsolved_tickets_for_phone_number account, params[:phone_number]
     tickets = Ticket.unsolved_zendesk_tickets account, params[:phone_number]
     user = Zendesk.create_user(Zendesk.client(account), params[:name], params[:phone_number])
     if tickets.size == 0
@@ -167,6 +137,7 @@ class Zendesk
           [{"id"=>ticket_field["id"], "value"=>params[:phone_number]}])
         Ticket.find_or_create_by(account: account, phone_number: params[:phone_number], ticket_id: ticket.id, source: "Zendesk", status: ticket.status)
       elsif params[:notification_type] == "ImageReceived"
+        # Attach image to ticket
         ticket = self.create_zendesk_ticket(account, "#{params[:phone_number]}##{tickets.size + 1}", "Image attached", user.id, user.id, "Urgent",
           [{"id"=>ticket_field["id"], "value"=>params[:phone_number]}])
         Ticket.find_or_create_by(account: account, phone_number: params[:phone_number], ticket_id: ticket.id, source: "Zendesk", status: ticket.status)
@@ -179,8 +150,12 @@ class Zendesk
         WhatsApp.send_message(account, params[:phone_number], account.zendesk_ticket_auto_responder)
       end
     else
+      # If unsolved ticket is found for user, their message is added as a comment
       ticket = self.find_ticket account, tickets.last.ticket_id
       if params[:notification_type] == "MessageReceived"
+        # Ticket comment is set as private because of a trigger condition I set up on Zendesk. This is to avoid the same comment
+        # being sent back to user since there is a trigger that sends all ticket comments to user. There was no other way to differentiate
+        # a user comment from an agent comment
         ticket.comment = { :value => params[:text], :author_id => user.id, public: false }
       elsif params[:notification_type] == "ImageReceived"
         ticket.comment = { :value => "Image attached", :author_id => user.id, public: false }
@@ -215,13 +190,7 @@ class Zendesk
       actions = [{field: "notification_target", value: [target.id, "{{ticket.latest_comment}}"]}]
       Zendesk.create_trigger(a, "Ongair - Ticket commented on", conditions, actions)
 
-      # # Trigger for ticket creation auto responder
-
-      # conditions = {all: [{field: "update_type", operator: "is", value: "Create"}, {field: "status", operator: "is_not", value: "solved"}], any: []}
-      # actions = [{field: "notification_target", value: [target.id, "Your request has been received and is being reviewed by our support staff.\n\nTo add additional comments, reply to this message."]}]
-      # Zendesk.create_trigger(a, "Ongair - Notify requester of received request via WhatsApp", conditions, actions)
-
-      # # Trigger and action for ticket status changes
+      # Trigger and action for ticket status changes
 
       conditions = {all: [{field: "status", operator: "changed", value: nil}], any: []}
       target_url = "#{Ongair.config.app_url}/api/tickets/status_change?ticket={{ticket.id}}&account=#{a.ongair_phone_number}&status={{ticket.status}}"
