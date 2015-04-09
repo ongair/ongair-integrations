@@ -45,7 +45,7 @@ describe 'The Ongair Integrations API' do
          to_return(:status => 200, :body => "", :headers => {})
 
       stub_request(:post, "#{base_zendesk_url}/targets").
-         with(:body => "{\"target\":{\"type\":\"url_target\",\"title\":\"Ongair - Ticket commented on\",\"target_url\":\"http://41.242.1.46/api/notifications?ticket={{ticket.id}}&account=254123456789&comment={{ticket.latest_comment}}\",\"attribute\":\"comment\",\"method\":\"POST\"}}").
+         with(:body => "{\"target\":{\"type\":\"url_target\",\"title\":\"Ongair - Ticket commented on\",\"target_url\":\"#{Ongair.config.app_url}/api/notifications?ticket={{ticket.id}}&account=254123456789&comment={{ticket.latest_comment}}\",\"attribute\":\"comment\",\"method\":\"POST\"}}").
          to_return(:status => 200, :body => "", :headers => {})
 
       post '/api/accounts', { ongair_phone_number: '254123456789',  zendesk_url: "https://#{zendesk_url}", zendesk_access_token: '1234567890', ongair_token: '087654321', ongair_url: 'http://app.ongair.im', zendesk_user: email }
