@@ -8,7 +8,7 @@ class WhatsApp
 	  HTTParty.post("#{location.account.ongair_url}/api/v1/base/send?token=#{location.account.ongair_token}", body: {phone_number: phone_number, text: location.address, thread: true})
 	end
 
-	def self.personalize_message message, ticket, name
-		message.gsub("{{ticket_id}}", ticket.ticket_id).gsub("{{user_name}}", name)
+	def self.personalize_message message, ticket_id, name
+		message.gsub("{{ticket_id}}", ticket_id.to_s).gsub("{{user_name}}", name)
 	end
 end
