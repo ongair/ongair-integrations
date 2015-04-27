@@ -6,7 +6,7 @@ require './models/ticket'
 require 'rubygems'
 require 'zendesk_api'
 require 'open-uri'
-require 'pry'
+# require 'pry'
 
 require_relative 'zendesk'
 require_relative 'whatsapp'
