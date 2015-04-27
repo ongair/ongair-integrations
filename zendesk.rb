@@ -147,7 +147,9 @@ class Zendesk
         `rm image.png`
       end
       if !ticket.nil?
-        WhatsApp.send_message(account, params[:phone_number], WhatsApp.personalize_message(account.zendesk_ticket_auto_responder, ticket.id, params[:name]))
+        if !account.zendesk_ticket_auto_responder.nil?
+          WhatsApp.send_message(account, params[:phone_number], WhatsApp.personalize_message(account.zendesk_ticket_auto_responder, ticket.id, params[:name]))
+        end
       end
     else
       # If unsolved ticket is found for user, their message is added as a comment
