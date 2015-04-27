@@ -6,7 +6,7 @@ describe 'The Ongair Integrations API' do
   it 'Should return the status of the API and version' do    
     get '/api/status'
     expect(response).to_not be(nil)
-    expect_json({success: true, version: '1.0', url: Ongair.config.app_url })    
+    expect_json({success: true, version: '1.0', url: Ongair.config.app_url, integrations: Account.count })    
   end
 
   describe 'The ZenDesk Account creation process' do
