@@ -44,7 +44,7 @@ module Ongair
 
     resource :status do
       get do
-        { version: '1.0', success: true, url: Ongair.config.app_url }
+        { version: '1.0', success: true, url: Ongair.config.app_url, integrations: Account.count }
       end
     end
 
