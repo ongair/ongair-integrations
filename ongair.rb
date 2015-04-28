@@ -6,7 +6,7 @@ require './models/ticket'
 require 'rubygems'
 require 'zendesk_api'
 require 'open-uri'
-require 'pry'
+# require 'pry'
 
 require_relative 'zendesk'
 require_relative 'whatsapp'
@@ -44,7 +44,7 @@ module Ongair
 
     resource :status do
       get do
-        { version: '1.0', success: true, url: Ongair.config.app_url }
+        { version: '1.0', success: true, url: Ongair.config.app_url, integrations: Account.count }
       end
     end
 
