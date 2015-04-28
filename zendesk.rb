@@ -97,17 +97,17 @@ class Zendesk
     ZendeskAPI::Attachment.new(self.client(account), {file: file}).save
   end
 
-  def self.find_user_by_phone_number client, phone_number
-    client.users.all do |user|
+  def self.find_user_by_phone_number account, phone_number
+    self.client(account).users.all do |user|
       return user if user.phone == phone_number
     end
   end
 
-  def self.create_user client, name, phone_number
-    if self.find_user_by_phone_number(client, phone_number).nil?
-      user = ZendeskAPI::User.create(client, { name: name, phone: phone_number })
+  def self.create_user account, name, phone_number
+    if self.find_user_by_phone_number(self.client(account), phone_number).nil?
+      user = ZendeskAPI::User.create(self.client(account), { name: name, phone: phone_number })
     else
-      user = self.find_user_by_phone_number(client, phone_number)
+      user = self.find_user_by_phone_number(self.client(account), phone_number)
     end
     user
   end
@@ -129,7 +129,7 @@ class Zendesk
   def self.create_ticket params, account
     ticket = nil
     tickets = Ticket.unsolved_zendesk_tickets account, params[:phone_number]
-    user = Zendesk.create_user(Zendesk.client(account), params[:name], params[:phone_number])
+    user = Zendesk.create_user(account, params[:name], params[:phone_number])
     if tickets.size == 0
       ticket_field = Zendesk.find_or_create_ticket_field account, "text", "Phone number"
       if params[:notification_type] == "MessageReceived"
