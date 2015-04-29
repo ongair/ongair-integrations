@@ -153,18 +153,25 @@ class Zendesk
     else
       # If unsolved ticket is found for user, their message is added as a comment
       ticket = self.find_ticket account, tickets.last.ticket_id
-      if params[:notification_type] == "MessageReceived"
-        # Ticket comment is set as private because of a trigger condition I set up on Zendesk. This is to avoid the same comment
-        # being sent back to user since there is a trigger that sends all ticket comments to user. There was no other way to differentiate
-        # a user comment from an agent comment
-        ticket.comment = { :value => params[:text], :author_id => user.id, public: false }
-      elsif params[:notification_type] == "ImageReceived"
-        ticket.comment = { :value => "Image attached", :author_id => user.id, public: false }
-        self.download_file params[:image]
-        ticket.comment.uploads << "image.png"
+      if !ticket.nil?
+        if params[:notification_type] == "MessageReceived"
+          # Ticket comment is set as private because of a trigger condition I set up on Zendesk. This is to avoid the same comment
+          # being sent back to user since there is a trigger that sends all ticket comments to user. There was no other way to differentiate
+          # a user comment from an agent comment
+          ticket.comment = { :value => params[:text], :author_id => user.id, public: false }
+        elsif params[:notification_type] == "ImageReceived"
+          ticket.comment = { :value => "Image attached", :author_id => user.id, public: false }
+          self.download_file params[:image]
+          ticket.comment.uploads << "image.png"
+        end
+        ticket.save!
+        `rm image.png`
+      else
+        tickets.last.destroy
+        ticket = self.create_zendesk_ticket(account, "#{params[:phone_number]}##{tickets.size + 1}", params[:text], user.id, user.id, "Urgent",
+          [{"id"=>ticket_field["id"], "value"=>params[:phone_number]}])
+        Ticket.find_or_create_by(account: account, phone_number: params[:phone_number], ticket_id: ticket.id, source: "Zendesk", status: ticket.status)
       end
-      ticket.save!
-      `rm image.png`
     end
     if ticket.nil?
       response = {error: "Ticket could not be created or found!"}
