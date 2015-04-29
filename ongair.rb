@@ -116,8 +116,20 @@ module Ongair
       desc "Send ticket updates, i.e. comments, to user via WhatsApp"
       
       post do
+        comment = Zendesk.find_ticket(account, params[:ticket].to_i).comments.last
         phone_number = Zendesk.find_phone_number_for_ticket(account, params[:ticket].to_i)
+
+        # Send ticket comment through WhatsApp
         WhatsApp.send_message account, phone_number, params[:comment]
+
+        attachments = comment.attachments
+        if !attachments.empty?
+          files = attachments.collect{|a| a.content_url if (a.content_type && a.content_type.split("/")[0] == "image") }.compact
+          # Send image through WhatsApp
+          files.each do |image_url|
+            WhatsApp.send_image account, phone_number, image_url
+          end
+        end
       end
     end
   end
