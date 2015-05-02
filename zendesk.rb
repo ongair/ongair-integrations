@@ -147,7 +147,7 @@ class Zendesk
         ticket.save
         `rm image.png`
       end
-      if !ticket.nil?
+      if !ticket.nil? && !account.zendesk_ticket_auto_responder.blank?
         WhatsApp.send_message(account, params[:phone_number], WhatsApp.personalize_message(account.zendesk_ticket_auto_responder, ticket.id, params[:name]))
       end
     else
