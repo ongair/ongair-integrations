@@ -164,8 +164,8 @@ class Zendesk
           self.download_file params[:image]
           ticket.comment.uploads << "image.png"
         end
-        ticket.save!
-        `rm image.png`
+        ticket.save! 
+        `rm image.png` if params[:notification_type] == "ImageReceived"
       else
         orphan = tickets.last
         ticket = self.create_zendesk_ticket(account, "#{params[:phone_number]}##{tickets.size + 1}", params[:text], user.id, user.id, "Urgent",
