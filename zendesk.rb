@@ -169,6 +169,8 @@ class Zendesk
       else
         orphan = tickets.last
         ticket_field = Zendesk.find_or_create_ticket_field account, "text", "Phone number"
+        puts "#{ticket_field['id']}"
+        puts "#{params[:phone_number]}"
         ticket = self.create_zendesk_ticket(account, "#{params[:phone_number]}##{tickets.size + 1}", params[:text], user.id, user.id, "Urgent",
           [{"id"=>ticket_field["id"], "value"=>params[:phone_number]}])
         Ticket.find_or_create_by(account: account, phone_number: params[:phone_number], ticket_id: ticket.id, source: "Zendesk", status: ticket.status)
