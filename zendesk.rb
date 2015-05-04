@@ -193,6 +193,12 @@ class Zendesk
     conditions = {all: [{field: "update_type", operator: "is", value: "Change"}, {field: "comment_is_public", operator: "is", value: "requester_can_see_comment"}, {field: "comment_is_public", operator: "is", value: "true"}]}
     target_url = "#{Ongair.config.app_url}/api/notifications?ticket={{ticket.id}}&account=#{a.ongair_phone_number}&comment={{ticket.latest_comment}}"
     target = Zendesk.create_target(a, "Ongair - Ticket commented on", target_url, "comment", "POST")
+
+    # Setting target as active just in case
+
+    target.active = true
+    target.save
+    
     if target.nil?
       response = {error: "Could not be authenticated!"}
     else
@@ -204,6 +210,12 @@ class Zendesk
       conditions = {all: [{field: "status", operator: "changed", value: nil}], any: []}
       target_url = "#{Ongair.config.app_url}/api/tickets/status_change?ticket={{ticket.id}}&account=#{a.ongair_phone_number}&status={{ticket.status}}"
       target = Zendesk.create_target(a, "Ongair - Ticket status changed", target_url, "comment", "POST")
+
+      # Setting target as active just in case
+
+      target.active = true
+      target.save
+      
       actions = [{field: "notification_target", value: [target.id, "The status of your ticket has been changed to {{ticket.status}}"]}]
       Zendesk.create_trigger(a, "Ongair - Ticket status changed", conditions, actions)
 
