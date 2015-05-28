@@ -2,6 +2,7 @@ require "active_record"
 
 class Ticket < ActiveRecord::Base
 	belongs_to :account
+	belongs_to :user
 
 	scope :zendesk, -> { where("source = ?", "Zendesk") }
 	scope :unsolved, -> {  where("status = ? or status = ? or status = ?", "open", "pending", "new") }

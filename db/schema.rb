@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150327155700) do
+ActiveRecord::Schema.define(version: 20150528140000) do
 
   create_table "accounts", force: :cascade do |t|
     t.string   "zendesk_url"
@@ -44,8 +44,20 @@ ActiveRecord::Schema.define(version: 20150327155700) do
     t.integer  "account_id"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.integer  "user_id"
   end
 
   add_index "tickets", ["account_id"], name: "index_tickets_on_account_id"
+  add_index "tickets", ["user_id"], name: "index_tickets_on_user_id"
+
+  create_table "users", force: :cascade do |t|
+    t.string   "name"
+    t.string   "email"
+    t.string   "messaging_service"
+    t.string   "phone_number"
+    t.string   "zendesk_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
 
 end
