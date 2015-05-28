@@ -191,7 +191,7 @@ class Zendesk
     # Trigger and action for ticket updates
     
     conditions = {all: [{field: "update_type", operator: "is", value: "Change"}, {field: "comment_is_public", operator: "is", value: "requester_can_see_comment"}, {field: "comment_is_public", operator: "is", value: "true"}]}
-    target_url = "#{Ongair.config.app_url}/api/notifications?ticket={{ticket.id}}&account=#{a.ongair_phone_number}&comment={{ticket.latest_comment}}"
+    target_url = "#{Ongair.config.app_url}/api/notifications?ticket={{ticket.id}}&account=#{a.ongair_phone_number}&comment={{ticket.latest_comment}}&author={{ticket.latest_comment.author.id}}"
     target = Zendesk.create_target(a, "Ongair - Ticket commented on", target_url, "comment", "POST")
 
     # Setting target as active just in case
