@@ -10,6 +10,7 @@ gem 'geocoder'
 gem 'napa'
 gem 'pry'
 gem 'pry-nav'
+gem 'rollbar'
 
 group :development do 
 	gem 'sqlite3'

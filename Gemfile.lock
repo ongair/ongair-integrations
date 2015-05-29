@@ -148,6 +148,8 @@ GEM
       netrc (~> 0.7)
     roar (0.12.9)
       representable (>= 1.6.0, < 2.0.0)
+    rollbar (1.5.1)
+      multi_json (~> 1.3)
     rspec (3.2.0)
       rspec-core (~> 3.2.0)
       rspec-expectations (~> 3.2.0)
@@ -209,6 +211,7 @@ DEPENDENCIES
   pry
   pry-nav
   rake
+  rollbar
   rspec
   simplecov
   sqlite3
