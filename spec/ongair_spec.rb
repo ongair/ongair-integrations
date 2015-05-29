@@ -95,6 +95,10 @@ describe 'The Ongair Integrations API' do
                     :headers => {'Accept'=>'application/json', 'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 'Content-Type'=>'application/json', 'User-Agent'=>'ZendeskAPI API 1.5.1'}).
                to_return(:status => 200, :body => "", :headers => {})
 
+      stub_request(:get, "#{base_zendesk_url}/users/search?query=254722881199").
+         with(:headers => {'Accept'=>'application/json', 'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 'User-Agent'=>'ZendeskAPI API 1.5.1'}).
+         to_return(:status => 200, :body => "", :headers => {})
+
       stub_request(:post, "http://app.ongair.im/api/v1/base/send?token=087654321").
          with(:body => "phone_number=254722881199&text=&thread=true").
          to_return(:status => 200, :body => "", :headers => {})

@@ -13,6 +13,7 @@ class WhatsApp
 	end
 
 	def self.personalize_message message, ticket_id, name
+		# binding.pry
 		message.gsub("{{ticket_id}}", ticket_id.to_s).gsub("{{user_name}}", name)
 	end
 end

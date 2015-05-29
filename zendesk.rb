@@ -148,7 +148,7 @@ class Zendesk
         ticket.save
         `rm image.png`
       end
-      if !ticket.nil?
+      if !ticket.nil? && !account.zendesk_ticket_auto_responder.blank?
         WhatsApp.send_message(account, params[:phone_number], WhatsApp.personalize_message(account.zendesk_ticket_auto_responder, ticket.id, params[:name]))
       end
     else
@@ -169,10 +169,13 @@ class Zendesk
           self.download_file params[:image]
           ticket.comment.uploads << "image.png"
         end
-        ticket.save!
-        `rm image.png`
+        ticket.save! 
+        `rm image.png` if params[:notification_type] == "ImageReceived"
       else
         orphan = tickets.last
+        ticket_field = Zendesk.find_or_create_ticket_field account, "text", "Phone number"
+        puts "#{ticket_field['id']}"
+        puts "#{params[:phone_number]}"
         ticket = self.create_zendesk_ticket(account, "#{params[:phone_number]}##{tickets.size + 1}", params[:text], zen_user.id, zen_user.id, "Urgent",
           [{"id"=>ticket_field["id"], "value"=>params[:phone_number]}])
         Ticket.find_or_create_by(account: account, phone_number: params[:phone_number], user: user, ticket_id: ticket.id, source: "Zendesk", status: ticket.status)
