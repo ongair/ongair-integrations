@@ -130,18 +130,19 @@ class Zendesk
   def self.create_ticket params, account
     ticket = nil
     tickets = Ticket.unsolved_zendesk_tickets account, params[:phone_number]
-    user = Zendesk.create_user(Zendesk.client(account), params[:name], params[:phone_number])
+    zen_user = Zendesk.create_user(Zendesk.client(account), params[:name], params[:phone_number])
+    user = User.find_or_create_by!(zendesk_id: zen_user.id, phone_number: params[:phone_number])
     if tickets.size == 0
       ticket_field = Zendesk.find_or_create_ticket_field account, "text", "Phone number"
       if params[:notification_type] == "MessageReceived"
-        ticket = self.create_zendesk_ticket(account, "#{params[:phone_number]}##{tickets.size + 1}", params[:text], user.id, user.id, "Urgent",
+        ticket = self.create_zendesk_ticket(account, "#{params[:phone_number]}##{tickets.size + 1}", params[:text], zen_user.id, zen_user.id, "Urgent",
           [{"id"=>ticket_field["id"], "value"=>params[:phone_number]}])
-        Ticket.find_or_create_by(account: account, phone_number: params[:phone_number], ticket_id: ticket.id, source: "Zendesk", status: ticket.status)
+        Ticket.find_or_create_by(account: account, phone_number: params[:phone_number], user: user, ticket_id: ticket.id, source: "Zendesk", status: ticket.status)
       elsif params[:notification_type] == "ImageReceived"
         # Attach image to ticket
-        ticket = self.create_zendesk_ticket(account, "#{params[:phone_number]}##{tickets.size + 1}", "Image attached", user.id, user.id, "Urgent",
+        ticket = self.create_zendesk_ticket(account, "#{params[:phone_number]}##{tickets.size + 1}", "Image attached", zen_user.id, zen_user.id, "Urgent",
           [{"id"=>ticket_field["id"], "value"=>params[:phone_number]}])
-        Ticket.find_or_create_by(account: account, phone_number: params[:phone_number], ticket_id: ticket.id, source: "Zendesk", status: ticket.status)
+        Ticket.find_or_create_by(account: account, phone_number: params[:phone_number], user: user, ticket_id: ticket.id, source: "Zendesk", status: ticket.status)
         self.download_file params[:image]
         ticket.comment.uploads << "image.png"
         ticket.save
@@ -152,15 +153,19 @@ class Zendesk
       end
     else
       # If unsolved ticket is found for user, their message is added as a comment
-      ticket = self.find_ticket account, tickets.last.ticket_id
+      current_ticket = tickets.last
+      ticket = self.find_ticket account, current_ticket.ticket_id
       if !ticket.nil?
         if params[:notification_type] == "MessageReceived"
           # Ticket comment is set as private because of a trigger condition I set up on Zendesk. This is to avoid the same comment
           # being sent back to user since there is a trigger that sends all ticket comments to user. There was no other way to differentiate
           # a user comment from an agent comment
-          ticket.comment = { :value => params[:text], :author_id => user.id, public: false }
+          
+          current_ticket.update(user_id: user.id) if current_ticket.user.nil?
+          
+          ticket.comment = { :value => params[:text], :author_id => zen_user.id }
         elsif params[:notification_type] == "ImageReceived"
-          ticket.comment = { :value => "Image attached", :author_id => user.id, public: false }
+          ticket.comment = { :value => "Image attached", :author_id => zen_user.id }
           self.download_file params[:image]
           ticket.comment.uploads << "image.png"
         end
@@ -168,9 +173,9 @@ class Zendesk
         `rm image.png`
       else
         orphan = tickets.last
-        ticket = self.create_zendesk_ticket(account, "#{params[:phone_number]}##{tickets.size + 1}", params[:text], user.id, user.id, "Urgent",
+        ticket = self.create_zendesk_ticket(account, "#{params[:phone_number]}##{tickets.size + 1}", params[:text], zen_user.id, zen_user.id, "Urgent",
           [{"id"=>ticket_field["id"], "value"=>params[:phone_number]}])
-        Ticket.find_or_create_by(account: account, phone_number: params[:phone_number], ticket_id: ticket.id, source: "Zendesk", status: ticket.status)
+        Ticket.find_or_create_by(account: account, phone_number: params[:phone_number], user: user, ticket_id: ticket.id, source: "Zendesk", status: ticket.status)
         orphan.destroy
       end
     end

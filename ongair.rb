@@ -3,6 +3,7 @@ require 'active_record'
 require './models/account'
 require './models/location'
 require './models/ticket'
+require './models/user'
 require 'rubygems'
 require 'zendesk_api'
 require 'open-uri'
@@ -116,19 +117,27 @@ module Ongair
       desc "Send ticket updates, i.e. comments, to user via WhatsApp"
       
       post do
-        puts ">>>>>>>>>>>>>>>#{params}"
         comment = Zendesk.find_ticket(account, params[:ticket].to_i).comments.last
         phone_number = Zendesk.find_phone_number_for_ticket(account, params[:ticket].to_i)
+        ticket = Ticket.find_by(ticket_id: params[:ticket].to_i)
 
-        # Send ticket comment through WhatsApp
-        # WhatsApp.send_message account, phone_number, params[:comment]
+        if params.has_key?(:author)
+          user = User.find_by(zendesk_id: params[:author])
+        else
+          user = User.find_by(zendesk_id: comment.author_id)
+        end
+        
+        if (ticket.user != user) || user.nil?
+          # Send ticket comment through WhatsApp
+          WhatsApp.send_message account, phone_number, params[:comment]
 
-        attachments = comment.attachments
-        if !attachments.empty?
-          files = attachments.collect{|a| a.content_url if (a.content_type && a.content_type.split("/")[0] == "image") }.compact
-          # Send image through WhatsApp
-          files.each do |image_url|
-            # WhatsApp.send_image account, phone_number, image_url
+          attachments = comment.attachments
+          if !attachments.empty?
+            files = attachments.collect{|a| a.content_url if (a.content_type && a.content_type.split("/")[0] == "image") }.compact
+            # Send image through WhatsApp
+            files.each do |image_url|
+              WhatsApp.send_image account, phone_number, image_url
+            end
           end
         end
       end
