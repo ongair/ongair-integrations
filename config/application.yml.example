@@ -1,2 +1,3 @@
 app_url: "http://localhost/"
-ROLLBAR_ACCESS_TOKEN:
+rollbar_access_token:
+rollbar_enabled: false
