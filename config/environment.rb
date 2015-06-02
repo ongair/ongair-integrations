@@ -4,4 +4,5 @@ Ongair.configure do |config|
   config.app_url = yml['app_url']
   config.rollbar_access_token = yml['rollbar_access_token']
   config.rollbar_enabled = yml['rollbar_enabled']
+  config.environment = yml['environment']
 end
