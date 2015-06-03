@@ -127,7 +127,7 @@ module Ongair
           user = User.find_by(zendesk_id: comment.author_id)
         end
         
-        if (ticket.user != user) || user.nil?
+        if (!ticket.nil? && ticket.user != user) || user.nil?
           # Send ticket comment through WhatsApp
           WhatsApp.send_message account, phone_number, params[:comment]
 
