@@ -182,7 +182,7 @@ class Zendesk
         if !ticket.nil? && !account.zendesk_ticket_auto_responder.blank?
           WhatsApp.send_message(account, params[:phone_number], WhatsApp.personalize_message(account.zendesk_ticket_auto_responder, ticket.id, params[:name]))
         end
-        
+
         Ticket.find_or_create_by(account: account, phone_number: params[:phone_number], user: user, ticket_id: ticket.id, source: "Zendesk", status: ticket.status)
         orphan.destroy
       end
@@ -206,11 +206,6 @@ class Zendesk
     conditions = {all: [{field: "update_type", operator: "is", value: "Change"}, {field: "comment_is_public", operator: "is", value: "requester_can_see_comment"}, {field: "comment_is_public", operator: "is", value: "true"}]}
     target_url = "#{Ongair.config.app_url}/api/notifications?ticket={{ticket.id}}&account=#{a.ongair_phone_number}&comment={{ticket.latest_comment}}&author={{ticket.latest_comment.author.id}}"
     target = Zendesk.create_target(a, "Ongair - Ticket commented on", target_url, "comment", "POST")
-
-    # Setting target as active just in case
-
-    target.active = true
-    target.save
     
     if target.nil?
       response = {error: "Could not be authenticated!"}
