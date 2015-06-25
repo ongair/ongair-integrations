@@ -5,4 +5,5 @@ Ongair.configure do |config|
   config.rollbar_access_token = yml['rollbar_access_token']
   config.rollbar_enabled = yml['rollbar_enabled']
   config.environment = yml['environment']
+  config.new_relic_key = yml['new_relic_key']
 end

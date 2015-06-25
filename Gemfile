@@ -11,6 +11,7 @@ gem 'napa'
 gem 'pry'
 gem 'pry-nav'
 gem 'rollbar'
+gem 'newrelic_rpm'
 
 group :development do 
 	gem 'sqlite3'

@@ -110,6 +110,7 @@ GEM
       thor (~> 0.19)
       virtus (~> 1.0)
     netrc (0.10.3)
+    newrelic_rpm (3.9.6.257)
     nokogiri (1.6.6.2)
       mini_portile (~> 0.6.0)
     octokit (3.8.0)
@@ -208,6 +209,7 @@ DEPENDENCIES
   httparty
   mysql2
   napa
+  newrelic_rpm
   pry
   pry-nav
   rake
