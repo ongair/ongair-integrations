@@ -131,7 +131,10 @@ class Zendesk
     ticket = nil
     tickets = Ticket.unsolved_zendesk_tickets account, params[:phone_number]
     zen_user = Zendesk.create_user(Zendesk.client(account), params[:name], params[:phone_number])
-    user = User.find_or_create_by!(zendesk_id: zen_user.id, phone_number: params[:phone_number])
+    user = User.find_or_create_by!(phone_number: params[:phone_number])
+    if !zen_user.nil?
+      user.update zendesk_id: zen_user.id
+    end
     if tickets.size == 0
       ticket_field = Zendesk.find_or_create_ticket_field account, "text", "Phone number"
       if params[:notification_type] == "MessageReceived"
