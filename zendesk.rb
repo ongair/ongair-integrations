@@ -63,6 +63,7 @@ class Zendesk
   def self.find_ticket_field account, title
     field = nil
     tf = `curl #{account.zendesk_url}/ticket_fields.json -v -u #{account.zendesk_user}/token:#{account.zendesk_access_token}`
+    tf = tf.encode('utf-8', 'binary', invalid: :replace, undef: :replace, replace: '')
     ticket_fields = JSON.parse(tf)["ticket_fields"]
     ticket_fields.each do |ticket_field|
       if ticket_field["title"] == title
