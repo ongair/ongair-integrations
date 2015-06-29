@@ -78,7 +78,7 @@ class Zendesk
     phone_number = nil
     if !ticket.nil?
       ticket["custom_fields"].each do |f|
-        if f.id == self.find_ticket_field(account, "Phone number").id
+        if f.id == self.find_ticket_field(account, "Phone number")["id"]
           phone_number = f.value
         end
       end
