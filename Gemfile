@@ -3,7 +3,7 @@ source 'https://rubygems.org'
 gem 'grape-swagger'
 gem 'activerecord', require: 'active_record'
 gem 'grape'
-gem "zendesk_api"
+gem "zendesk_api", :git => 'git://github.com/ongair/zendesk_api_client_rb.git'
 gem "httparty"
 gem 'rake'
 gem 'geocoder'
@@ -12,6 +12,7 @@ gem 'pry'
 gem 'pry-nav'
 gem 'rollbar'
 gem 'newrelic_rpm'
+gem 'curb'
 
 group :development do 
 	gem 'sqlite3'

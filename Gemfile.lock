@@ -1,3 +1,15 @@
+GIT
+  remote: git://github.com/ongair/zendesk_api_client_rb.git
+  revision: 09ba60f33380853dbbfc0834e8733159831fdf8e
+  specs:
+    zendesk_api (1.9.5)
+      faraday (~> 0.9)
+      hashie (>= 1.2, < 4.0, != 3.3.0)
+      inflection
+      mime-types
+      multi_json
+      multipart-post (~> 2.0)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -47,6 +59,7 @@ GEM
       descendants_tracker (~> 0.0.1)
     crack (0.4.2)
       safe_yaml (~> 1.0.0)
+    curb (0.8.8)
     descendants_tracker (0.0.4)
       thread_safe (~> 0.3, >= 0.3.1)
     diff-lcs (1.2.5)
@@ -188,13 +201,6 @@ GEM
     webmock (1.20.4)
       addressable (>= 2.3.6)
       crack (>= 0.3.2)
-    zendesk_api (1.5.1)
-      faraday (~> 0.9)
-      hashie (>= 1.2, < 4.0)
-      inflection
-      mime-types
-      multi_json
-      multipart-post (~> 2.0)
 
 PLATFORMS
   ruby
@@ -203,6 +209,7 @@ DEPENDENCIES
   activerecord
   airborne
   annotate
+  curb
   geocoder
   grape
   grape-swagger
@@ -218,7 +225,7 @@ DEPENDENCIES
   simplecov
   sqlite3
   webmock
-  zendesk_api
+  zendesk_api!
 
 BUNDLED WITH
    1.10.2
