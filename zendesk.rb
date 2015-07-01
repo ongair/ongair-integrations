@@ -109,7 +109,7 @@ class Zendesk
     begin
       user = client.users.search(query: phone_number).first
     rescue Encoding::InvalidByteSequenceError
-      users = `curl #{account.zendesk_url}/search.json?query=type:user #{phone_number} -v -u #{account.zendesk_user}/token:#{account.zendesk_access_token}`
+      users = `curl -s #{account.zendesk_url}/search.json?query=type:user #{phone_number} -v -u #{account.zendesk_user}/token:#{account.zendesk_access_token}`
       users = users.encode('utf-8', 'binary', invalid: :replace, undef: :replace, replace: '')
       users = JSON.parse(users)
       user = users["results"].select{|s| s["phone"] == phone_number}.first
