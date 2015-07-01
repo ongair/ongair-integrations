@@ -100,18 +100,29 @@ class Zendesk
     ZendeskAPI::Attachment.new(self.client(account), {file: file}).save
   end
 
-  def self.find_user_by_phone_number client, phone_number
+  def self.find_user_by_phone_number account, phone_number
     # client.users.all do |user|
     #   return user if user.phone == phone_number
     # end
-    client.users.search(query: phone_number).first
+    user = nil
+    client = Zendesk.client(account)
+    begin
+      user = client.users.search(query: phone_number).first
+    rescue Encoding::InvalidByteSequenceError
+      users = `curl #{account.zendesk_url}/search.json?query=type:user #{phone_number} -v -u #{account.zendesk_user}/token:#{account.zendesk_access_token}`
+      users = users.encode('utf-8', 'binary', invalid: :replace, undef: :replace, replace: '')
+      users = JSON.parse(users)
+      user = users["results"].select{|s| s["phone"] == phone_number}.first
+    end
+    user
   end
 
-  def self.create_user client, name, phone_number
-    if self.find_user_by_phone_number(client, phone_number).nil?
+  def self.create_user account, name, phone_number
+    client = Zendesk.client(account)
+    if self.find_user_by_phone_number(account, phone_number).nil?
       user = ZendeskAPI::User.create(client, { name: name, phone: phone_number })
     else
-      user = self.find_user_by_phone_number(client, phone_number)
+      user = self.find_user_by_phone_number(account, phone_number)
     end
     user
   end
@@ -133,7 +144,7 @@ class Zendesk
   def self.create_ticket params, account
     ticket = nil
     tickets = Ticket.unsolved_zendesk_tickets account, params[:phone_number]
-    zen_user = Zendesk.create_user(Zendesk.client(account), params[:name], params[:phone_number])
+    zen_user = Zendesk.create_user(account, params[:name], params[:phone_number])
     user = User.find_or_create_by!(phone_number: params[:phone_number])
     if !zen_user.nil?
       user.update zendesk_id: zen_user.id
