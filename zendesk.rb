@@ -62,10 +62,7 @@ class Zendesk
 
   def self.find_ticket_field account, title
     field = nil
-    tf = `curl -s #{account.zendesk_url}/ticket_fields.json -v -u #{account.zendesk_user}/token:#{account.zendesk_access_token}`
-    tf = tf.encode('utf-8', 'binary', invalid: :replace, undef: :replace, replace: '')
-    ticket_fields = JSON.parse(tf)["ticket_fields"]
-    ticket_fields.each do |ticket_field|
+    self.client(account).ticket_fields.each do |ticket_field|
       if ticket_field["title"] == title
         field = ticket_field
       end
@@ -101,24 +98,12 @@ class Zendesk
   end
 
   def self.find_user_by_phone_number account, phone_number
-    # client.users.all do |user|
-    #   return user if user.phone == phone_number
-    # end
-    user = nil
-    client = Zendesk.client(account)
-    begin
-      user = client.users.search(query: phone_number).first
-    rescue Encoding::InvalidByteSequenceError
-      users = `curl -s #{account.zendesk_url}/search.json?query=type:user #{phone_number} -v -u #{account.zendesk_user}/token:#{account.zendesk_access_token}`
-      users = users.encode('utf-8', 'binary', invalid: :replace, undef: :replace, replace: '')
-      users = JSON.parse(users)
-      user = users["results"].select{|s| s["phone"] == phone_number}.first
-    end
-    user
+    client = self.client(account)
+    client.users.search(query: phone_number).first
   end
 
   def self.create_user account, name, phone_number
-    client = Zendesk.client(account)
+    client = self.client(account)
     if self.find_user_by_phone_number(account, phone_number).nil?
       user = ZendeskAPI::User.create(client, { name: name, phone: phone_number })
     else
@@ -147,11 +132,7 @@ class Zendesk
     zen_user = Zendesk.create_user(account, params[:name], params[:phone_number])
     user = User.find_or_create_by!(phone_number: params[:phone_number])
     if !zen_user.nil?
-      if zen_user.is_a?(Hash)
-        zen_user_id = zen_user["id"]
-      else
-        zen_user_id = zen_user.id
-      end
+      zen_user_id = zen_user.id
       user.update zendesk_id: zen_user_id
     end
     if tickets.size == 0
