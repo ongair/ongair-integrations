@@ -8,3 +8,5 @@ run.sh
 # Ignore application configuration
 /config/application.yml
 coverage
+
+log*

@@ -45,7 +45,7 @@ module Ongair
 
     resource :status do
       get do
-        { version: '1.0', success: true, url: Ongair.config.app_url, integrations: Account.count }
+        { version: '1.0', success: true, url: Ongair.config.app_url, integrations: Account.count, zendesk_api_version: ZendeskAPI::VERSION }
       end
     end
 
