@@ -147,17 +147,22 @@ class Zendesk
     zen_user = Zendesk.create_user(account, params[:name], params[:phone_number])
     user = User.find_or_create_by!(phone_number: params[:phone_number])
     if !zen_user.nil?
-      user.update zendesk_id: zen_user.id
+      if zen_user.is_a?(Hash)
+        zen_user_id = zen_user["id"]
+      else
+        zen_user_id = zen_user.id
+      end
+      user.update zendesk_id: zen_user_id
     end
     if tickets.size == 0
       ticket_field = Zendesk.find_or_create_ticket_field account, "text", "Phone number"
       if params[:notification_type] == "MessageReceived"
-        ticket = self.create_zendesk_ticket(account, "#{params[:phone_number]}##{tickets.size + 1}", params[:text], zen_user.id, zen_user.id, "Urgent",
+        ticket = self.create_zendesk_ticket(account, "#{params[:phone_number]}##{tickets.size + 1}", params[:text], zen_user_id, zen_user_id, "Urgent",
           [{"id"=>ticket_field["id"], "value"=>params[:phone_number]}])
         Ticket.find_or_create_by(account: account, phone_number: params[:phone_number], user: user, ticket_id: ticket.id, source: "Zendesk", status: ticket.status)
       elsif params[:notification_type] == "ImageReceived"
         # Attach image to ticket
-        ticket = self.create_zendesk_ticket(account, "#{params[:phone_number]}##{tickets.size + 1}", "Image attached", zen_user.id, zen_user.id, "Urgent",
+        ticket = self.create_zendesk_ticket(account, "#{params[:phone_number]}##{tickets.size + 1}", "Image attached", zen_user_id, zen_user_id, "Urgent",
           [{"id"=>ticket_field["id"], "value"=>params[:phone_number]}])
         Ticket.find_or_create_by(account: account, phone_number: params[:phone_number], user: user, ticket_id: ticket.id, source: "Zendesk", status: ticket.status)
         self.download_file params[:image]
@@ -180,9 +185,9 @@ class Zendesk
           
           current_ticket.update(user_id: user.id) if current_ticket.user.nil?
           
-          ticket.comment = { :value => params[:text], :author_id => zen_user.id }
+          ticket.comment = { :value => params[:text], :author_id => zen_user_id }
         elsif params[:notification_type] == "ImageReceived"
-          ticket.comment = { :value => "Image attached", :author_id => zen_user.id }
+          ticket.comment = { :value => "Image attached", :author_id => zen_user_id }
           self.download_file params[:image]
           ticket.comment.uploads << "image.png"
         end
@@ -193,7 +198,7 @@ class Zendesk
         ticket_field = Zendesk.find_or_create_ticket_field account, "text", "Phone number"
         puts "#{ticket_field['id']}"
         puts "#{params[:phone_number]}"
-        ticket = self.create_zendesk_ticket(account, "#{params[:phone_number]}##{tickets.size + 1}", params[:text], zen_user.id, zen_user.id, "Urgent",
+        ticket = self.create_zendesk_ticket(account, "#{params[:phone_number]}##{tickets.size + 1}", params[:text], zen_user_id, zen_user_id, "Urgent",
           [{"id"=>ticket_field["id"], "value"=>params[:phone_number]}])
 
         if !ticket.nil? && !account.zendesk_ticket_auto_responder.blank?
