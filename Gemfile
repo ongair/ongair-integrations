@@ -12,7 +12,7 @@ gem 'pry'
 gem 'pry-nav'
 gem 'rollbar'
 gem 'newrelic_rpm'
-gem 'curb'
+#gem 'curb'
 
 group :development do 
 	gem 'sqlite3'

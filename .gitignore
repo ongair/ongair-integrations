@@ -10,3 +10,5 @@ run.sh
 coverage
 
 log*
+.ruby-version
+.ruby-gemset
