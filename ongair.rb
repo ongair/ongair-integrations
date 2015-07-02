@@ -33,14 +33,6 @@ module Ongair
       def logger
         API.logger
       end
-
-      def current_user
-        Zendesk.current_user(account)
-      end
-
-      def authenticate!
-        error!('401 Unauthorized', 401) unless current_user
-      end
     end
 
     resource :status do
@@ -69,8 +61,7 @@ module Ongair
         requires :ongair_url, type: String
       end
       post do
-        # authenticate!
-        Zendesk.setup_account params
+        Zendesk.setup_account params[:ongair_phone_number], params[:zendesk_url], params[:zendesk_access_token], params[:zendesk_user], params[:ongair_token], params[:ongair_url], params[:zendesk_ticket_auto_responder]
       end
     end
 
@@ -92,7 +83,7 @@ module Ongair
         if params[:notification_type] == "LocationReceived"
           WhatsApp.send_location params[:latitude], params[:longitude], params[:phone_number]
         elsif params[:notification_type] == "MessageReceived" || params[:notification_type] == "ImageReceived"
-          Zendesk.create_ticket params, account
+          Zendesk.create_ticket params[:phone_number], params[:name], params[:text], params[:notification_type], params[:image], account
         end
       end
 
