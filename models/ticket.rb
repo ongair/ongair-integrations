@@ -8,14 +8,14 @@ class Ticket < ActiveRecord::Base
 	# scope :unsolved, -> {  where("status = ? or status = ? or status = ?", "open", "pending", "new") }
 	scope :unsolved, -> {  where("status = ? or status = ? or status = ?", "1", "2", "3") }
 
-	STATUS_NEW = 1
-	STATUS_OPEN = 2
-	STATUS_PENDING = 3
-	STATUS_SOLVED = 4
-	STATUS_CLOSED = 5
+	STATUS_NEW = '1'
+	STATUS_OPEN = '2'
+	STATUS_PENDING = '3'
+	STATUS_SOLVED = '4'
+	STATUS_CLOSED = '5'
 
 	def can_be_commented?
-		status == STATUS_NEW.to_s || status == STATUS_OPEN.to_s	 || status == STATUS_PENDING.to_s
+		status == STATUS_NEW || status == STATUS_OPEN	 || status == STATUS_PENDING
 	end
 
 	def self.unsolved_zendesk_tickets account, phone_number

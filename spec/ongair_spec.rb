@@ -2,6 +2,7 @@ require 'spec_helper'
 require 'cgi'
  
 describe 'The Ongair Integrations API' do
+  # fixtures :accounts
   
   it 'Should return the status of the API and version' do    
     get '/api/status'
@@ -43,6 +44,47 @@ describe 'The Ongair Integrations API' do
       expect_json({ success: true })
     end
 
-    # it 'If there is a closed ticket then '
+    it 'creates a new ticket if there are no valid tickets' do
+      # move to setup
+      Account.delete_all
+      User.delete_all
+      Ticket.delete_all
+
+      account = Account.create! ongair_phone_number: '254722211222', zendesk_access_token: '0HMc6VD8678RH123X345mO3nffJFl3dTMvT123Kd', zendesk_url: 'https://ongair.zendesk.com/api/v2', zendesk_ticket_auto_responder: 'Hi {{ticket_id}}', zendesk_user: 'admin@ongair.im'
+
+      # stubs for find or create zendesk user
+      user = double()
+      user.stub(:id).and_return('1234567890')
+      Zendesk.stub(:find_or_create_user).and_return(user)
+
+      # stub creating the ticket field
+      ticket_field = { "id" => 'ticket_field_id' }
+      Zendesk.stub(:find_or_create_ticket_field).and_return(ticket_field)
+
+      ticket = double()
+      ticket.stub(:id).and_return('T12345')
+      ticket.stub(:status).and_return('new')
+
+      # stub the actual ticket creation process
+      Zendesk.stub(:create_zendesk_ticket).and_return(ticket)
+
+      # stub the response to ongair
+      # TODO: need to test the auto response
+      WhatsApp.stub(:send_message).and_return(anything())
+
+      post '/api/tickets', { account: account.ongair_phone_number, phone_number: '254705888999', name: 'John', text: 'Hi', notification_type: 'MessageReceived' }
+      expect_json({ success: true })
+
+      # test that a user is created
+      created_user = User.find_by(phone_number: '254705888999')
+      expect(created_user).to_not be_nil
+      expect(created_user.zendesk_id).to eql('1234567890')
+
+      # test that a ticket is created
+      ticket = Ticket.first
+      expect(ticket.ticket_id).to eql('T12345')
+      expect(ticket.user).to eql(created_user)
+      expect(ticket.status).to eql(Ticket::STATUS_NEW)
+    end
   end  
 end

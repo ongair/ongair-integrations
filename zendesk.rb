@@ -26,7 +26,7 @@ class Zendesk
      :requester_id => requester_id, :priority => priority, :custom_fields => custom_fields)
   end
 
-  def self.find_ticket account, id
+  def self.find_ticket account, id    
     self.client(account).tickets.find(client(account), :id => id)
   end
 
@@ -94,13 +94,16 @@ class Zendesk
     ticket = nil
     tickets = Ticket.unsolved_zendesk_tickets account, phone_number
     zen_user = Zendesk.find_or_create_user(account, name, phone_number)
+
     user = User.find_or_create_by!(phone_number: phone_number)
     if !zen_user.nil?
       zen_user_id = zen_user.id
       user.update zendesk_id: zen_user_id
     end
     if tickets.size == 0
+      # TODO: This could be moved to setup???      
       ticket_field = Zendesk.find_or_create_ticket_field account, "text", "Phone number"
+      
       if notification_type == "MessageReceived"
         ticket = self.create_zendesk_ticket(account, "#{phone_number}##{tickets.size + 1}", text, zen_user_id, zen_user_id, "Urgent",
           [{"id"=>ticket_field["id"], "value"=>phone_number}])
