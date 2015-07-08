@@ -8,16 +8,22 @@ class Ticket < ActiveRecord::Base
 	# scope :unsolved, -> {  where("status = ? or status = ? or status = ?", "open", "pending", "new") }
 	scope :unsolved, -> {  where("status = ? or status = ? or status = ?", "1", "2", "3") }
 
+	STATUS_NEW = 1
+	STATUS_OPEN = 2
+	STATUS_PENDING = 3
+	STATUS_SOLVED = 4
+	STATUS_CLOSED = 5
+
 	def self.unsolved_zendesk_tickets account, phone_number
 		Ticket.zendesk.unsolved.where("account_id = ? and phone_number = ?", account.id, phone_number)
 	end
 
 	def self.status_map
-		status_new = {1 => ["new", "nuevo", "novo", "nieuw"]}
-		status_open = {2 => ["open", "abierto", "aberto", "offen"]}
-		status_pending = {3 => ["pending", "pendiente", "in afwachting"]}
-		status_solved = {4 => ["solved", "resuelto", "resolvido"]}
-		status_closed = {5 => ["closed", "cerrado"]}
+		status_new = {STATUS_NEW => ["new", "nuevo", "novo", "nieuw"]}
+		status_open = {STATUS_OPEN => ["open", "abierto", "aberto", "offen"]}
+		status_pending = {STATUS_PENDING => ["pending", "pendiente", "in afwachting"]}
+		status_solved = {STATUS_SOLVED => ["solved", "resuelto", "resolvido"]}
+		status_closed = {STATUS_CLOSED => ["closed", "cerrado"]}
 		status_dictionary = {status_new: status_new, status_open: status_open, status_pending: status_pending, status_solved: status_solved, status_closed: status_closed}
 	end
 
