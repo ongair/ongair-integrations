@@ -1,6 +1,7 @@
 require 'airborne'
 require 'webmock/rspec'
 require 'simplecov'
+require 'pry'
 
 # coverage start
 SimpleCov.start do
