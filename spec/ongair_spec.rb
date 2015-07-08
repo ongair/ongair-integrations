@@ -42,5 +42,7 @@ describe 'The Ongair Integrations API' do
       post '/api/tickets', { account: '254123456789', phone_number: '254722881199', name: 'jsk', text: 'Hi', notification_type: 'MessageReceived'}      
       expect_json({ success: true })
     end
-  end
+
+    # it 'If there is a closed ticket then '
+  end  
 end

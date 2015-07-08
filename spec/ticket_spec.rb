@@ -17,4 +17,21 @@ describe 'The Zendesk Ticket' do
     expect(Ticket.get_status('cerrado')).to eql(Ticket::STATUS_CLOSED)
     expect(Ticket.get_status('closed')).to eql(Ticket::STATUS_CLOSED)
   end
+
+  it 'Can be commented on only if it is either new, open or pending' do
+    ticket = Ticket.new(status: Ticket::STATUS_NEW )
+    expect(ticket.can_be_commented?).to eql(true)
+
+    ticket.status = Ticket::STATUS_OPEN
+    expect(ticket.can_be_commented?).to eql(true)
+
+    ticket.status = Ticket::STATUS_PENDING
+    expect(ticket.can_be_commented?).to eql(true)
+
+    ticket.status = Ticket::STATUS_SOLVED
+    expect(ticket.can_be_commented?).to eql(false)
+
+    ticket.status = Ticket::STATUS_CLOSED
+    expect(ticket.can_be_commented?).to eql(false)    
+  end
 end

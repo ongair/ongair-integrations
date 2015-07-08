@@ -14,6 +14,10 @@ class Ticket < ActiveRecord::Base
 	STATUS_SOLVED = 4
 	STATUS_CLOSED = 5
 
+	def can_be_commented?
+		status == STATUS_NEW.to_s || status == STATUS_OPEN.to_s	 || status == STATUS_PENDING.to_s
+	end
+
 	def self.unsolved_zendesk_tickets account, phone_number
 		Ticket.zendesk.unsolved.where("account_id = ? and phone_number = ?", account.id, phone_number)
 	end
