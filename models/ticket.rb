@@ -13,7 +13,7 @@ class Ticket < ActiveRecord::Base
 	end
 
 	def self.status_map
-		status_new = {1 => ["new", "nuevo", "novo"]}
+		status_new = {1 => ["new", "nuevo", "novo", "nieuw"]}
 		status_open = {2 => ["open", "abierto", "aberto", "offen"]}
 		status_pending = {3 => ["pending", "pendiente"]}
 		status_solved = {4 => ["solved", "resuelto"]}
@@ -27,5 +27,12 @@ class Ticket < ActiveRecord::Base
 			status = s.keys.first if s.values.first.include?(status)
 		end
 		status
+	end
+
+	def self.update_statuses
+		Ticket.all.each do |ticket|
+			status = Ticket.get_status(ticket.status) if !ticket.status.blank?
+			ticket.update(status: status)
+		end
 	end
 end
