@@ -31,7 +31,8 @@ class Ticket < ActiveRecord::Base
 	end
 
 	def self.update_statuses
-		Ticket.all.each do |ticket|
+		tickets = Ticket.where.not('status = ? or status = ? or status = ? or status = ? or status = ?', '1', '2', '3', '4', '5')
+		tickets.each do |ticket|
 			status = Ticket.get_status(ticket.status) if !ticket.status.blank?
 			ticket.update(status: status)
 		end
