@@ -15,9 +15,10 @@ class Ticket < ActiveRecord::Base
 	def self.status_map
 		status_new = {1 => ["new", "nuevo", "novo", "nieuw"]}
 		status_open = {2 => ["open", "abierto", "aberto", "offen"]}
-		status_pending = {3 => ["pending", "pendiente"]}
-		status_solved = {4 => ["solved", "resuelto"]}
-		status_dictionary = {status_new: status_new, status_open: status_open, status_pending: status_pending, status_solved: status_solved}
+		status_pending = {3 => ["pending", "pendiente", "in afwachting"]}
+		status_solved = {4 => ["solved", "resuelto", "resolvido"]}
+		status_closed = {5 => ["closed", "cerrado"]}
+		status_dictionary = {status_new: status_new, status_open: status_open, status_pending: status_pending, status_solved: status_solved, status_closed: status_closed}
 	end
 
 	def self.get_status status
