@@ -47,4 +47,18 @@ class Ticket < ActiveRecord::Base
 			ticket.update(status: status)
 		end
 	end
+
+	def self.set_correct_status
+		tickets = Ticket.all
+		tickets.each do |ticket|
+			account = ticket.account
+			client = Zendesk.client account
+			begin
+				t = client.tickets.find id: ticket.ticket_id
+				ticket.update(status: self.get_status(t.status)) if !t.nil?
+			rescue Exception => e
+				
+			end
+		end
+	end
 end
