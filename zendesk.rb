@@ -115,7 +115,7 @@ class Zendesk
     tickets = Ticket.unsolved_zendesk_tickets account, phone_number
     zen_user = Zendesk.find_or_create_user(account, name, phone_number)
 
-    user = User.find_or_create_by!(phone_number: phone_number)
+    user = User.find_or_create_by!(phone_number: phone_number, account: account)
     if !zen_user.nil?
       zen_user_id = zen_user.id
       user.update zendesk_id: zen_user_id

@@ -92,7 +92,7 @@ module Ongair
       post :status_change do
         if params[:ticket]
           ticket = Ticket.find_by(ticket_id: params[:ticket])
-          # ticket.update(status: params[:status].downcase) if !ticket.nil?
+          ticket.update(status: params[:status].downcase) if !ticket.nil?
           status = Ticket.get_status(params[:status])
           ticket.update(status: status) if !ticket.nil?
         end
@@ -115,9 +115,9 @@ module Ongair
         ticket = Ticket.find_by(ticket_id: params[:ticket].to_i)
 
         if params.has_key?(:author)
-          user = User.find_by(zendesk_id: params[:author])
+          user = User.where(zendesk_id: params[:author], account: account).first
         else
-          user = User.find_by(zendesk_id: comment.author_id)
+          user = User.where(zendesk_id: comment.author_id, account: account).first
         end
         
         if (!ticket.nil? && ticket.user != user) || user.nil?
