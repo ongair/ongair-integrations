@@ -100,6 +100,7 @@ class Zendesk
       zen_user_id = zen_user.id
       user.update zendesk_id: zen_user_id
     end
+
     if tickets.size == 0
       # TODO: This could be moved to setup???      
       ticket_field = Zendesk.find_or_create_ticket_field account, "text", "Phone number"
@@ -107,6 +108,7 @@ class Zendesk
       if notification_type == "MessageReceived"
         ticket = self.create_zendesk_ticket(account, "#{phone_number}##{tickets.size + 1}", text, zen_user_id, zen_user_id, "Urgent",
           [{"id"=>ticket_field["id"], "value"=>phone_number}])
+        # TODO: Do we need to save the phone number on the ticket?
         Ticket.find_or_create_by(account: account, phone_number: phone_number, user: user, ticket_id: ticket.id, source: "Zendesk", status: Ticket.get_status(ticket.status))
       elsif notification_type == "ImageReceived"
         # Attach image to ticket
@@ -132,7 +134,6 @@ class Zendesk
           # a user comment from an agent comment
           
           current_ticket.update(user_id: user.id) if current_ticket.user.nil?
-          
           ticket.comment = { :value => text, :author_id => zen_user_id }
         elsif notification_type == "ImageReceived"
           ticket.comment = { :value => "Image attached", :author_id => zen_user_id }
