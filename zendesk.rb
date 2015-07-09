@@ -90,7 +90,27 @@ class Zendesk
     ZendeskAPI::Target.create(self.client(account), {type: "url_target", title: title, target_url: target_url, attribute: attribute, method: method})   
   end
 
-  def self.create_ticket phone_number, name, text, notification_type, image, account
+  def self.setup_ticket notification_type, phone_number, zen_user_id, account, user, text, image, tickets
+    ticket = nil
+    ticket_field = Zendesk.find_or_create_ticket_field account, "text", "Phone number"
+    if notification_type == "MessageReceived"
+      ticket = self.create_zendesk_ticket(account, "#{phone_number}##{tickets.size + 1}", text, zen_user_id, zen_user_id, "Urgent",
+        [{"id"=>ticket_field["id"], "value"=>phone_number}])
+      Ticket.find_or_create_by(account: account, phone_number: phone_number, user: user, ticket_id: ticket.id, source: "Zendesk", status: Ticket.get_status(ticket.status))
+    elsif notification_type == "ImageReceived"
+      # Attach image to ticket
+      ticket = self.create_zendesk_ticket(account, "#{phone_number}##{tickets.size + 1}", "Image attached", zen_user_id, zen_user_id, "Urgent",
+        [{"id"=>ticket_field["id"], "value"=>phone_number}])
+      Ticket.find_or_create_by(account: account, phone_number: phone_number, user: user, ticket_id: ticket.id, source: "Zendesk", status: Ticket.get_status(ticket.status))
+      self.download_file image
+      ticket.comment.uploads << "image.png"
+      ticket.save
+      `rm image.png`
+    end
+    ticket
+  end
+
+  def self.create_ticket phone_number, name, text, notification_type, image="", account
     ticket = nil
     tickets = Ticket.unsolved_zendesk_tickets account, phone_number
     zen_user = Zendesk.find_or_create_user(account, name, phone_number)
@@ -102,24 +122,7 @@ class Zendesk
     end
 
     if tickets.size == 0
-      # TODO: This could be moved to setup???      
-      ticket_field = Zendesk.find_or_create_ticket_field account, "text", "Phone number"
-      
-      if notification_type == "MessageReceived"
-        ticket = self.create_zendesk_ticket(account, "#{phone_number}##{tickets.size + 1}", text, zen_user_id, zen_user_id, "Urgent",
-          [{"id"=>ticket_field["id"], "value"=>phone_number}])
-        # TODO: Do we need to save the phone number on the ticket?
-        Ticket.find_or_create_by(account: account, phone_number: phone_number, user: user, ticket_id: ticket.id, source: "Zendesk", status: Ticket.get_status(ticket.status))
-      elsif notification_type == "ImageReceived"
-        # Attach image to ticket
-        ticket = self.create_zendesk_ticket(account, "#{phone_number}##{tickets.size + 1}", "Image attached", zen_user_id, zen_user_id, "Urgent",
-          [{"id"=>ticket_field["id"], "value"=>phone_number}])
-        Ticket.find_or_create_by(account: account, phone_number: phone_number, user: user, ticket_id: ticket.id, source: "Zendesk", status: Ticket.get_status(ticket.status))
-        self.download_file image
-        ticket.comment.uploads << "image.png"
-        ticket.save
-        `rm image.png`
-      end
+      ticket = self.setup_ticket notification_type, phone_number, zen_user_id, account, user, text, image, tickets
       if !ticket.nil? && !account.zendesk_ticket_auto_responder.blank?
         WhatsApp.send_message(account, phone_number, WhatsApp.personalize_message(account.zendesk_ticket_auto_responder, ticket.id, name))
       end
@@ -129,10 +132,6 @@ class Zendesk
       ticket = self.find_ticket account, current_ticket.ticket_id
       if !ticket.nil?
         if notification_type == "MessageReceived"
-          # Ticket comment is set as private because of a trigger condition I set up on Zendesk. This is to avoid the same comment
-          # being sent back to user since there is a trigger that sends all ticket comments to user. There was no other way to differentiate
-          # a user comment from an agent comment
-          
           current_ticket.update(user_id: user.id) if current_ticket.user.nil?
           ticket.comment = { :value => text, :author_id => zen_user_id }
         elsif notification_type == "ImageReceived"
@@ -140,7 +139,15 @@ class Zendesk
           self.download_file image
           ticket.comment.uploads << "image.png"
         end
-        ticket.save! 
+        
+        begin
+          ticket.save!
+        rescue ZendeskAPI::Error::RecordInvalid => e
+          ticket = self.setup_ticket notification_type, phone_number, zen_user_id, account, user, text, image, tickets
+          if !ticket.nil? && !account.zendesk_ticket_auto_responder.blank?
+            WhatsApp.send_message(account, phone_number, WhatsApp.personalize_message(account.zendesk_ticket_auto_responder, ticket.id, name))
+          end
+        end 
         `rm image.png` if notification_type == "ImageReceived"
       else
         orphan = tickets.last
