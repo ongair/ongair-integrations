@@ -108,24 +108,28 @@ describe 'The Ongair Integrations API' do
     describe 'The callbacks from Zendesk' do
 
       before(:each) do
-        existing_user = User.find_or_create_by(phone_number: '254705888999', zendesk_id: @user.id)
-        @ticket = Ticket.find_or_create_by(user: existing_user, status: Ticket::STATUS_NEW, ticket_id: '1234567', account: @account, source: 'Zendesk', phone_number: '254705888999')
+        @existing_user = User.find_or_create_by(phone_number: '254705888999', zendesk_id: @user.id)
+        @ticket = Ticket.find_or_create_by(user: @existing_user, status: Ticket::STATUS_NEW, ticket_id: '1234567', account: @account, source: 'Zendesk', phone_number: '254705888999')
       end
 
       
       it 'Sends a WhatsApp message when an agent responds to a ticket' do
-
-        # comment = Zendesk.find_ticket(account, params[:ticket].to_i).comments.last
         ticket = double()
         comments = double()
         last_comment = double()
         
         expect(comments).to receive(:last).and_return(last_comment)
+        expect(last_comment).to receive(:attachments).and_return([])
+
         expect(ticket).to receive(:comments).and_return(comments)
         expect(Zendesk).to receive(:find_ticket).with(@account, @ticket.ticket_id.to_i).and_return(ticket)
 
-        # post '/api/notifications', { ticket: @ticket.ticket_id, comment: 'How can I help you?', author: 'admin@ongair.im', account: @account.ongair_phone_number } 
-        # expect(response).to be_success
+        expect(Zendesk).to receive(:find_phone_number_for_ticket).and_return(@existing_user.phone_number)
+
+        expect(WhatsApp).to receive(:send_message).with(@account, @existing_user.phone_number, 'How can I help you?')
+
+        post '/api/notifications', { ticket: @ticket.ticket_id, comment: 'How can I help you?', author: 'admin@ongair.im', account: @account.ongair_phone_number } 
+        expect(response).to be_created
       end
     end
   end  
