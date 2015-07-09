@@ -110,8 +110,7 @@ describe 'The Ongair Integrations API' do
       before(:each) do
         @existing_user = User.find_or_create_by(phone_number: '254705888999', zendesk_id: @user.id)
         @ticket = Ticket.find_or_create_by(user: @existing_user, status: Ticket::STATUS_NEW, ticket_id: '1234567', account: @account, source: 'Zendesk', phone_number: '254705888999')
-      end
-
+      end      
       
       it 'Sends a WhatsApp message when an agent responds to a ticket' do
         ticket = double()
@@ -130,6 +129,16 @@ describe 'The Ongair Integrations API' do
 
         post '/api/notifications', { ticket: @ticket.ticket_id, comment: 'How can I help you?', author: 'admin@ongair.im', account: @account.ongair_phone_number } 
         expect(response).to be_created
+      end
+
+      it 'Updates the status of a ticket after update from Zendesk' do
+        expect(@ticket.status).to eql(Ticket::STATUS_NEW)
+        
+        post '/api/tickets/status_change', { ticket: @ticket.ticket_id, account: @account, status: 'resolvido' }
+        expect(response).to be_created
+
+        @ticket.reload
+        expect(@ticket.status).to eql(Ticket::STATUS_SOLVED)
       end
     end
   end  
