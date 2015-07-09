@@ -11,55 +11,57 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150610164319) do
+ActiveRecord::Schema.define(version: 20150709091036) do
 
   create_table "accounts", force: :cascade do |t|
-    t.string   "zendesk_url",                   limit: 255
-    t.string   "zendesk_access_token",          limit: 255
-    t.string   "zendesk_user",                  limit: 255
-    t.string   "ongair_token",                  limit: 255
-    t.string   "ongair_phone_number",           limit: 255
-    t.string   "ongair_url",                    limit: 255
-    t.string   "zendesk_ticket_auto_responder", limit: 255
+    t.string   "zendesk_url"
+    t.string   "zendesk_access_token"
+    t.string   "zendesk_user"
+    t.string   "ongair_token"
+    t.string   "ongair_phone_number"
+    t.string   "ongair_url"
+    t.string   "zendesk_ticket_auto_responder"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.boolean  "setup",                         limit: 1,   default: false
+    t.boolean  "setup",                         default: false
   end
 
   create_table "locations", force: :cascade do |t|
-    t.string   "address",    limit: 255
-    t.float    "latitude",   limit: 24
-    t.float    "longitude",  limit: 24
-    t.integer  "account_id", limit: 4
+    t.string   "address"
+    t.float    "latitude"
+    t.float    "longitude"
+    t.integer  "account_id"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
-  add_index "locations", ["account_id"], name: "index_locations_on_account_id", using: :btree
+  add_index "locations", ["account_id"], name: "index_locations_on_account_id"
 
   create_table "tickets", force: :cascade do |t|
-    t.string   "phone_number", limit: 255
-    t.string   "ticket_id",    limit: 255
-    t.string   "status",       limit: 255
-    t.string   "source",       limit: 255
-    t.integer  "account_id",   limit: 4
+    t.string   "phone_number"
+    t.string   "ticket_id"
+    t.string   "status"
+    t.string   "source"
+    t.integer  "account_id"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.integer  "user_id",      limit: 4
+    t.integer  "user_id"
   end
 
-  add_index "tickets", ["account_id"], name: "index_tickets_on_account_id", using: :btree
-  add_index "tickets", ["user_id"], name: "index_tickets_on_user_id", using: :btree
+  add_index "tickets", ["account_id"], name: "index_tickets_on_account_id"
+  add_index "tickets", ["user_id"], name: "index_tickets_on_user_id"
 
   create_table "users", force: :cascade do |t|
-    t.string   "name",              limit: 255
-    t.string   "email",             limit: 255
-    t.string   "messaging_service", limit: 255
-    t.string   "phone_number",      limit: 255
-    t.string   "zendesk_id",        limit: 255
+    t.string   "name"
+    t.string   "email"
+    t.string   "messaging_service"
+    t.string   "phone_number"
+    t.string   "zendesk_id"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.integer  "account_id"
   end
 
-  add_foreign_key "tickets", "users"
+  add_index "users", ["account_id"], name: "index_users_on_account_id"
+
 end
