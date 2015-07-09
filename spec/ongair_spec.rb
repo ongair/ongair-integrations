@@ -7,7 +7,7 @@ describe 'The Ongair Integrations API' do
     User.delete_all
     Ticket.delete_all
 
-    @account = Account.create! ongair_phone_number: '254722211222', zendesk_access_token: '0HMc6VD8678RH123X345mO3nffJFl3dTMvT123Kd', zendesk_url: 'https://ongair.zendesk.com/api/v2', zendesk_ticket_auto_responder: 'Hi {{ticket_id}}', zendesk_user: 'admin@ongair.im'
+    @account = Account.create! ongair_phone_number: '254722211222', zendesk_access_token: '0HMc6VD8678RH123X345mO3nffJFl3dTMvT123Kd', zendesk_url: 'https://ongair.zendesk.com/api/v2', zendesk_ticket_auto_responder: nil, zendesk_user: 'admin@ongair.im'
   end
   
   it 'Should return the status of the API and version' do    
@@ -49,7 +49,7 @@ describe 'The Ongair Integrations API' do
 
       # stub the response to ongair
       # TODO: need to test the auto response
-      WhatsApp.stub(:send_message).and_return(anything())
+      # WhatsApp.stub(:send_message).and_return(anything())
     end
 
     it 'Creates a Zendesk ticket' do
@@ -102,6 +102,31 @@ describe 'The Ongair Integrations API' do
 
       post '/api/tickets', { account: @account.ongair_phone_number, phone_number: '254705888999', name: 'John', text: 'What is wrong?', notification_type: 'MessageReceived' }
       expect_json({ success: true })
+    end
+
+
+    describe 'The callbacks from Zendesk' do
+
+      before(:each) do
+        existing_user = User.find_or_create_by(phone_number: '254705888999', zendesk_id: @user.id)
+        @ticket = Ticket.find_or_create_by(user: existing_user, status: Ticket::STATUS_NEW, ticket_id: '1234567', account: @account, source: 'Zendesk', phone_number: '254705888999')
+      end
+
+      
+      it 'Sends a WhatsApp message when an agent responds to a ticket' do
+
+        # comment = Zendesk.find_ticket(account, params[:ticket].to_i).comments.last
+        ticket = double()
+        comments = double()
+        last_comment = double()
+        
+        expect(comments).to receive(:last).and_return(last_comment)
+        expect(ticket).to receive(:comments).and_return(comments)
+        expect(Zendesk).to receive(:find_ticket).with(@account, @ticket.ticket_id.to_i).and_return(ticket)
+
+        # post '/api/notifications', { ticket: @ticket.ticket_id, comment: 'How can I help you?', author: 'admin@ongair.im', account: @account.ongair_phone_number } 
+        # expect(response).to be_success
+      end
     end
   end  
 end
