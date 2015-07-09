@@ -16,3 +16,9 @@ end
 
 # disable web connect
 WebMock.disable_net_connect!
+
+RSpec.configure do |config|
+  config.mock_with :rspec do |c|
+    c.syntax = [:should, :expect]
+  end
+end
