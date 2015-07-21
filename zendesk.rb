@@ -90,6 +90,12 @@ class Zendesk
     ZendeskAPI::Target.create(self.client(account), {type: "url_target", title: title, target_url: target_url, attribute: attribute, method: method})   
   end
 
+  def self.download_file image
+    open('image.png', 'wb') do |file|
+      file << open(image).read
+    end
+  end
+
   def self.setup_ticket notification_type, phone_number, zen_user_id, account, user, text, image, tickets
     ticket = nil
     ticket_field = Zendesk.find_or_create_ticket_field account, "text", "Phone number"
