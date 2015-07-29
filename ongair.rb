@@ -42,6 +42,11 @@ module Ongair
     end
 
     resource :accounts do
+      desc "Return all accounts"
+      get do
+        Account.all
+      end
+
       desc "Return an account"
       params do
         requires :ongair_phone_number, type: String, desc: "Ongair Phone Number"
@@ -66,6 +71,11 @@ module Ongair
     end
 
     resource :tickets do 
+      desc "Return all tickets"
+      get do
+        Ticket.all
+      end
+      
       desc "Return a ticket"
       params do
         requires :id, type: Integer, desc: "Ticket id"
@@ -96,6 +106,13 @@ module Ongair
           status = Ticket.get_status(params[:status])
           ticket.update(status: status) if !ticket.nil?
         end
+      end
+    end
+
+    resource :users do
+      desc "Return all users"
+      get do
+        User.all
       end
     end
 
