@@ -57,6 +57,20 @@ module Ongair
         end
       end
 
+      desc "Return users for an account"
+      route_param :id do
+        get :users do
+          Account.find(params[:id]).users
+        end
+      end
+
+      desc "Return tickets for an account"
+      route_param :id do
+        get :tickets do
+          Account.find(params[:id]).tickets
+        end
+      end
+
       desc "Create a new account"
       params do
         requires :zendesk_url, type: String
@@ -75,7 +89,7 @@ module Ongair
       get do
         Ticket.all
       end
-      
+
       desc "Return a ticket"
       params do
         requires :id, type: Integer, desc: "Ticket id"
