@@ -143,8 +143,8 @@ module Ongair
       post do
         comment = Zendesk.find_ticket(account, params[:ticket].to_i).comments.last
         phone_number = Zendesk.find_phone_number_for_ticket(account, params[:ticket].to_i)
-        ticket = Ticket.find_by(ticket_id: params[:ticket].to_i)
-
+        ticket = Ticket.find_by(ticket_id: params[:ticket].to_i, account: account)
+        
         if params.has_key?(:author)
           user = User.where(zendesk_id: params[:author], account: account).first
         else
