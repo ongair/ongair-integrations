@@ -100,12 +100,12 @@ class Zendesk
     ticket = nil
     ticket_field = Zendesk.find_or_create_ticket_field account, "text", "Phone number"
     if notification_type == "MessageReceived"
-      ticket = self.create_zendesk_ticket(account, "#{phone_number}##{tickets.size + 1}", text, zen_user_id, zen_user_id, "Urgent"
+      ticket = self.create_zendesk_ticket(account, "#{phone_number}##{tickets.size + 1}", text, zen_user_id, zen_user_id, "Urgent")
         # , [{"id"=>ticket_field["id"], "value"=>phone_number}])
       Ticket.find_or_create_by(account: account, phone_number: phone_number, user: user, ticket_id: ticket.id, source: "Zendesk", status: Ticket.get_status(ticket.status))
     elsif notification_type == "ImageReceived"
       # Attach image to ticket
-      ticket = self.create_zendesk_ticket(account, "#{phone_number}##{tickets.size + 1}", "Image attached", zen_user_id, zen_user_id, "Urgent"
+      ticket = self.create_zendesk_ticket(account, "#{phone_number}##{tickets.size + 1}", "Image attached", zen_user_id, zen_user_id, "Urgent")
         # , [{"id"=>ticket_field["id"], "value"=>phone_number}])
       Ticket.find_or_create_by(account: account, phone_number: phone_number, user: user, ticket_id: ticket.id, source: "Zendesk", status: Ticket.get_status(ticket.status))
       self.download_file image
