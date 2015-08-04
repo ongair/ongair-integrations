@@ -115,8 +115,8 @@ module Ongair
 
       post :status_change do
         if params[:ticket]
-          ticket = Ticket.find_by(ticket_id: params[:ticket])
-          ticket.update(status: params[:status].downcase) if !ticket.nil?
+          ticket = Ticket.find_by(ticket_id: params[:ticket], account: account)
+          # ticket.update(status: params[:status].downcase) if !ticket.nil?
           status = Ticket.get_status(params[:status])
           ticket.update(status: status) if !ticket.nil?
         end
