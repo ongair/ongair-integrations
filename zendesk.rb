@@ -21,9 +21,9 @@ class Zendesk
     self.client(account).tickets
   end
 
-  def self.create_zendesk_ticket account, subject, comment, submitter_id, requester_id, priority, custom_fields=[]
+  def self.create_zendesk_ticket account, subject, comment, submitter_id, requester_id, priority, custom_fields=[], tags=[]
     ZendeskAPI::Ticket.create(self.client(account), :subject => subject, :comment => { :value => comment }, :submitter_id => submitter_id,
-     :requester_id => requester_id, :priority => priority, :custom_fields => custom_fields)
+     :requester_id => requester_id, :priority => priority, :custom_fields => custom_fields, :tags => tags)
   end
 
   def self.find_ticket account, id    
@@ -100,12 +100,12 @@ class Zendesk
     ticket = nil
     ticket_field = Zendesk.find_or_create_ticket_field account, "text", "Phone number"
     if notification_type == "MessageReceived"
-      ticket = self.create_zendesk_ticket(account, "#{phone_number}##{tickets.size + 1}", text, zen_user_id, zen_user_id, "Urgent")
+      ticket = self.create_zendesk_ticket(account, "#{phone_number}##{tickets.size + 1}", text, zen_user_id, zen_user_id, "Urgent", [], ['ongair'])
         # , [{"id"=>ticket_field["id"], "value"=>phone_number}])
       Ticket.find_or_create_by(account: account, phone_number: phone_number, user: user, ticket_id: ticket.id, source: "Zendesk", status: Ticket.get_status(ticket.status))
     elsif notification_type == "ImageReceived"
       # Attach image to ticket
-      ticket = self.create_zendesk_ticket(account, "#{phone_number}##{tickets.size + 1}", "Image attached", zen_user_id, zen_user_id, "Urgent")
+      ticket = self.create_zendesk_ticket(account, "#{phone_number}##{tickets.size + 1}", "Image attached", zen_user_id, zen_user_id, "Urgent", [], ['ongair'])
         # , [{"id"=>ticket_field["id"], "value"=>phone_number}])
       Ticket.find_or_create_by(account: account, phone_number: phone_number, user: user, ticket_id: ticket.id, source: "Zendesk", status: Ticket.get_status(ticket.status))
       self.download_file image
@@ -161,7 +161,7 @@ class Zendesk
         puts "#{ticket_field['id']}"
         puts "#{phone_number}"
         ticket = self.create_zendesk_ticket(account, "#{phone_number}##{tickets.size + 1}", text, zen_user_id, zen_user_id, "Urgent",
-          [{"id"=>ticket_field["id"], "value"=>phone_number}])
+          [{"id"=>ticket_field["id"], "value"=>phone_number}], ['ongair'])
 
         if !ticket.nil? && !account.zendesk_ticket_auto_responder.blank?
           WhatsApp.send_message(account, phone_number, WhatsApp.personalize_message(account.zendesk_ticket_auto_responder, ticket.id, name))
