@@ -123,6 +123,39 @@ module Ongair
       end
     end
 
+    resource :slack do
+      post do
+        account = Account.where(ongair_phone_number: "254770381135").first
+        users = {
+          'muaad' => 1039482362,
+          'kimenye' => 512527842,
+          'chief_intern' => 1046175161,
+          'jobkimathi' => 1092318601
+        }
+        user_id = users[params[:user_name]]
+        # zendesk#12 hey
+        text = params[:text]
+        ticket_id = text.split(" ")[0].split('#')[1]
+        comment = text.split(" ")[1..text.length].join(" ")
+        if !ticket_id.blank? && !comment.blank? && !user_id.blank?
+          user = Zendesk.client(account).users.find(id: user_id)
+          if !user.nil?
+            ticket = Zendesk.find_ticket(account, ticket_id.strip)
+            if !ticket.nil?
+              ticket.comment = { :value => comment.strip, :author_id => user.id }
+              ticket.save!
+            else
+              { error: "Ticket ##{ticket_id} doesn't exist on Zendesk" }
+            end
+          else
+            { error: "User doesn't exist on Zendesk" }
+          end
+        else
+          { message: "Not meant for Zendesk" }
+        end
+      end
+    end
+
     resource :users do
       desc "Return all users"
       get do
