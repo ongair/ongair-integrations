@@ -98,10 +98,10 @@ class Zendesk
 
   def self.new_ticket_config account
     conditions = {all: [{field: "update_type", operator: "is", value: "Create"}, {field: "via_id", operator: "is", value: 0}], any: []}
-    target_url = "#{Ongair.config.app_url}/api/tickets/new"
+    target_url = "#{Ongair.config.app_url}/api/tickets/new?comment={{ticket.latest_comment}}"
     target = Zendesk.create_target(account, "Ongair - New Ticket for WhatsApp end-user", target_url, "payload", "POST")
     
-    payload = "{ ticket: { id: '{{ticket.id}}', comment: '{{ticket.latest_comment}}', status: '{{ticket.status}}', requester: { id: '{{ticket.requester.id}}', phone_number: '{{ticket.requester.phone}}', name: '{{ticket.requester.name}}' } }, account: #{account.ongair_phone_number} }"
+    payload = "{ ticket: { id: '{{ticket.id}}', status: '{{ticket.status}}', requester: { id: '{{ticket.requester.id}}', phone_number: '{{ticket.requester.phone}}', name: '{{ticket.requester.name}}' } }, account: #{account.ongair_phone_number} }"
     actions = [{field: "notification_target", value: [target.id, payload]}]
     Zendesk.create_trigger(account, "Ongair - New Ticket for WhatsApp end-user", conditions, actions)
   end

@@ -139,7 +139,7 @@ module Ongair
           WhatsApp.create_contact account, phone_number, name
           user = User.find_or_create_by! phone_number: phone_number, zendesk_id: zen_user.id, account: account
           Ticket.create! phone_number: phone_number, ticket_id: ticket[:id], status: Ticket.get_status(ticket[:status]), source: "Zendesk", account: account, user: user
-          WhatsApp.send_message(account, phone_number, "Hi. A new ticket ##{ticket[:id]} has been created for you with the following message:\n\n#{ticket[:comment]}\n\nYou can reply to this message here regarding this issue.")
+          WhatsApp.send_message(account, phone_number, "Hi. A new ticket ##{ticket[:id]} has been created for you with the following message:\n\n#{params[:comment]}\n\nYou can reply to this message here regarding this issue.")
         end
         {success: true}
       end
@@ -196,6 +196,8 @@ module Ongair
       desc "Send ticket updates, i.e. comments, to user via WhatsApp"
       
       post do
+        # If account is nil and params includes client, find client and set account to: 
+        # client.accounts.find ticket.account_id
         comment = Zendesk.find_ticket(account, params[:ticket].to_i).comments.last
         ticket = Ticket.find_by(ticket_id: params[:ticket].to_i, account: account)
         if !ticket.nil?
