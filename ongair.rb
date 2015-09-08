@@ -42,10 +42,10 @@ module Ongair
     end
 
     resource :accounts do
-      desc "Return all accounts"
-      get do
-        Account.all
-      end
+      # desc "Return all accounts"
+      # get do
+      #   Account.all
+      # end
 
       desc "Return an account"
       params do
