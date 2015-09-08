@@ -15,7 +15,10 @@ class WhatsApp
 	end
 
 	def self.personalize_message message, ticket_id, name
-		# binding.pry
 		message.gsub("{{ticket_id}}", ticket_id.to_s).gsub("{{user_name}}", name)
+	end
+
+	def self.create_contact account, phone_number, name
+		HTTParty.post("https://app.ongair.im/api/v1/base/create_contact?token=#{account.ongair_token}", body: {phone_number: phone_number, name: name})
 	end
 end
