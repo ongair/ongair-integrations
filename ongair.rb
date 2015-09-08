@@ -132,8 +132,12 @@ module Ongair
         name = requester[:name]
 
         if !phone_number.blank?
+          zen_user = Zendesk.find_or_create_user account, name, phone_number
+          zen_ticket = Zendesk.find_ticket account, ticket[:id]
+          zen_ticket.requester_id = zen_user.id
+          zen_ticket.save!
           WhatsApp.create_contact account, phone_number, name
-          user = User.find_or_create_by! phone_number: phone_number, zendesk_id: requester[:id], account: account
+          user = User.find_or_create_by! phone_number: phone_number, zendesk_id: zen_user.id, account: account
           Ticket.create! phone_number: phone_number, ticket_id: ticket[:id], status: Ticket.get_status(ticket[:status]), source: "Zendesk", account: account, user: user
           WhatsApp.send_message(account, phone_number, "Hi. A new ticket ##{ticket[:id]} has been created for you with the following message:\n\n#{ticket[:comment]}\n\nYou can reply to this message here regarding this issue.")
         end
