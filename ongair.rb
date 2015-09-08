@@ -121,6 +121,24 @@ module Ongair
           ticket.update(status: status) if !ticket.nil?
         end
       end
+
+      post :new do
+        payload = eval(params[:payload])
+        account = Account.find_by(ongair_phone_number: payload[:account])
+        ticket = payload[:ticket]
+        requester = ticket[:requester]
+        phone_number = requester[:phone_number]
+        phone_number = Zendesk.find_phone_number_for_ticket account, ticket[:id] if phone_number.blank?
+        name = requester[:name]
+
+        if !phone_number.blank?
+          WhatsApp.create_contact account, phone_number, name
+          user = User.find_or_create_by! phone_number: phone_number, zendesk_id: requester[:id], account: account
+          Ticket.create! phone_number: phone_number, ticket_id: ticket[:id], status: Ticket.get_status(ticket[:status]), source: "Zendesk", account: account, user: user
+          WhatsApp.send_message(account, phone_number, "Hi. A new ticket ##{ticket[:id]} has been created for you with the following message:\n\n#{ticket[:comment]}\n\nYou can reply to this message here regarding this issue.")
+        end
+        {success: true}
+      end
     end
 
     resource :slack do
