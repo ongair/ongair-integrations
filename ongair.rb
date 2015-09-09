@@ -199,27 +199,36 @@ module Ongair
       post do
         # If account is nil and params includes client, find client and set account to: 
         # client.accounts.find ticket.account_id
-        comment = Zendesk.find_ticket(account, params[:ticket].to_i).comments.last
-        ticket = Ticket.find_by(ticket_id: params[:ticket].to_i, account: account)
-        if !ticket.nil?
-          phone_number = ticket.phone_number # Zendesk.find_phone_number_for_ticket(account, params[:ticket].to_i)
-
-          if params.has_key?(:author)
-            user = User.where(zendesk_id: params[:author], account: account).first
-          else
-            user = User.where(zendesk_id: comment.author_id, account: account).first
+        if account.nil? and !params[:client].empty?
+          client = Client.find(client)
+          tickets = Ticket.where(ticket_id: params[:ticket])
+          if !client.nil?
+            account = client.accounts & tickets.collect{|t| t.account}
           end
-          
-          if (!ticket.nil? && ticket.user != user) || user.nil?
-            # Send ticket comment through WhatsApp
-            WhatsApp.send_message account, phone_number, params[:comment]
+        end
+        if !account.nil?
+          comment = Zendesk.find_ticket(account, params[:ticket].to_i).comments.last
+          ticket = Ticket.find_by(ticket_id: params[:ticket].to_i, account: account)
+          if !ticket.nil?
+            phone_number = ticket.phone_number # Zendesk.find_phone_number_for_ticket(account, params[:ticket].to_i)
 
-            attachments = comment.attachments
-            if !attachments.empty?
-              files = attachments.collect{|a| a.content_url if (a.content_type && a.content_type.split("/")[0] == "image") }.compact
-              # Send image through WhatsApp
-              files.each do |image_url|
-                WhatsApp.send_image account, phone_number, image_url
+            if params.has_key?(:author)
+              user = User.where(zendesk_id: params[:author], account: account).first
+            else
+              user = User.where(zendesk_id: comment.author_id, account: account).first
+            end
+            
+            if (!ticket.nil? && ticket.user != user) || user.nil?
+              # Send ticket comment through WhatsApp
+              WhatsApp.send_message account, phone_number, params[:comment]
+
+              attachments = comment.attachments
+              if !attachments.empty?
+                files = attachments.collect{|a| a.content_url if (a.content_type && a.content_type.split("/")[0] == "image") }.compact
+                # Send image through WhatsApp
+                files.each do |image_url|
+                  WhatsApp.send_image account, phone_number, image_url
+                end
               end
             end
           end
