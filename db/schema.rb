@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150709091036) do
+ActiveRecord::Schema.define(version: 20150909115310) do
 
   create_table "accounts", force: :cascade do |t|
     t.string   "zendesk_url"
@@ -24,6 +24,15 @@ ActiveRecord::Schema.define(version: 20150709091036) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.boolean  "setup",                         default: false
+    t.integer  "client_id"
+  end
+
+  add_index "accounts", ["client_id"], name: "index_accounts_on_client_id"
+
+  create_table "clients", force: :cascade do |t|
+    t.string   "name"
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
   create_table "locations", force: :cascade do |t|
