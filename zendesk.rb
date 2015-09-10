@@ -150,13 +150,13 @@ class Zendesk
         if notification_type == "MessageReceived"
           current_ticket.update(user_id: user.id) if current_ticket.user.nil?
           ticket.comment = { :value => text, :author_id => zen_user_id }
-          if Ticket.get_status(ticket.status) == "3"
+          if Ticket.get_status(ticket.status) == "3" || Ticket.get_status(ticket.status) == "4"
             ticket.status = "open"
             current_ticket.update(status: "2")
           end
         elsif notification_type == "ImageReceived"
           ticket.comment = { :value => "Image attached", :author_id => zen_user_id }
-          if Ticket.get_status(ticket.status) == "3"
+          if Ticket.get_status(ticket.status) == "3" || Ticket.get_status(ticket.status) == "4"
             ticket.status = "open"
             current_ticket.update(status: "2")
           end
