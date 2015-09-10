@@ -28,7 +28,15 @@ module Ongair
 
     helpers do
       def account
-        Account.find_by(ongair_phone_number: params[:account])
+        account = Account.find_by(ongair_phone_number: params[:account])
+        if account.nil? && !params[:client].empty?
+          client = Client.find(params[:client])
+          tickets = Ticket.where(ticket_id: params[:ticket])
+          if !client.nil?
+            account = (client.accounts & tickets.collect{|t| t.account}).first
+          end
+        end
+        account
       end
 
       def logger
@@ -117,9 +125,11 @@ module Ongair
       post :status_change do
         if params[:ticket]
           ticket = Ticket.find_by(ticket_id: params[:ticket], account: account)
-          # ticket.update(status: params[:status].downcase) if !ticket.nil?
           status = Ticket.get_status(params[:status])
           ticket.update(status: status) if !ticket.nil?
+          if ticket.status == "5" && !account.ticket_closed_notification.blank?
+            WhatsApp.send_message account, ticket.phone_number, account.ticket_closed_notification
+          end
         end
       end
 
@@ -197,16 +207,7 @@ module Ongair
       desc "Send ticket updates, i.e. comments, to user via WhatsApp"
       
       post do
-        # If account is nil and params includes client, find client and set account to: 
-        # client.accounts.find ticket.account_id
-        # if account.nil? and !params[:client].empty?
-        #   client = Client.find(client)
-        #   tickets = Ticket.where(ticket_id: params[:ticket])
-        #   if !client.nil?
-        #     account = client.accounts & tickets.collect{|t| t.account}
-        #   end
-        # end
-        # if !account.nil?
+        if !account.nil?
           comment = Zendesk.find_ticket(account, params[:ticket].to_i).comments.last
           ticket = Ticket.find_by(ticket_id: params[:ticket].to_i, account: account)
           if !ticket.nil?
@@ -232,7 +233,7 @@ module Ongair
               end
             end
           end
-        # end
+        end
       end
     end
   end
