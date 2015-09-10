@@ -5,8 +5,9 @@ class Ticket < ActiveRecord::Base
 	belongs_to :user
 
 	scope :zendesk, -> { where("source = ?", "Zendesk") }
-	# scope :unsolved, -> {  where("status = ? or status = ? or status = ?", "open", "pending", "new") }
+
 	scope :unsolved, -> {  where("status = ? or status = ? or status = ?", "1", "2", "3") }
+	scope :not_closed, -> {  where("status = ? or status = ? or status = ? or status = ?", "1", "2", "3", "4") }
 
 	STATUS_NEW = '1'
 	STATUS_OPEN = '2'
@@ -19,7 +20,11 @@ class Ticket < ActiveRecord::Base
 	end
 
 	def self.unsolved_zendesk_tickets account, phone_number
-		Ticket.zendesk.unsolved.where("account_id = ? and phone_number = ?", account.id, phone_number)
+		if account.ticket_end_status == "4"
+			Ticket.zendesk.unsolved.where("account_id = ? and phone_number = ?", account.id, phone_number)
+		else
+			Ticket.zendesk.not_closed.where("account_id = ? and phone_number = ?", account.id, phone_number)
+		end
 	end
 
 	def self.status_map
