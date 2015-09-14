@@ -175,11 +175,7 @@ class Zendesk
         `rm image.png` if notification_type == "ImageReceived"
       else
         orphan = tickets.last
-        ticket_field = Zendesk.find_or_create_ticket_field account, "text", "Phone number"
-        puts "#{ticket_field['id']}"
-        puts "#{phone_number}"
-        ticket = self.create_zendesk_ticket(account, "#{phone_number}##{tickets.size + 1}", text, zen_user_id, zen_user_id, "Urgent",
-          [{"id"=>ticket_field["id"], "value"=>phone_number}], ['Ongair', phone_number])
+        ticket = self.setup_ticket notification_type, phone_number, zen_user_id, account, user, text, image, tickets
 
         if !ticket.nil? && !account.zendesk_ticket_auto_responder.blank?
           WhatsApp.send_message(account, phone_number, WhatsApp.personalize_message(account.zendesk_ticket_auto_responder, ticket.id, name))
