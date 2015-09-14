@@ -125,10 +125,12 @@ module Ongair
       post :status_change do
         if params[:ticket]
           ticket = Ticket.find_by(ticket_id: params[:ticket], account: account)
-          status = Ticket.get_status(params[:status])
-          ticket.update(status: status) if !ticket.nil?
-          if !ticket.nil? && ticket.status == "5" && !account.ticket_closed_notification.blank?
-            WhatsApp.send_message account, ticket.phone_number, account.ticket_closed_notification
+          if !ticket.nil?
+            status = Ticket.get_status(params[:status])
+            ticket.update(status: status) if !ticket.nil?
+            if ticket.status == "5" && !account.ticket_closed_notification.blank?
+              WhatsApp.send_message account, ticket.phone_number, account.ticket_closed_notification
+            end
           end
         end
       end
