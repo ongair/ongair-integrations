@@ -112,12 +112,16 @@ class Zendesk
     if notification_type == "MessageReceived"
       ticket = self.create_zendesk_ticket(account, "#{phone_number}##{tickets.size + 1}", text, zen_user_id, zen_user_id, "Urgent", [], ['Ongair', phone_number])
         # , [{"id"=>ticket_field["id"], "value"=>phone_number}])
-      Ticket.find_or_create_by(account: account, phone_number: phone_number, user: user, ticket_id: ticket.id, source: "Zendesk", status: Ticket.get_status(ticket.status))
+      if !ticket.nil?
+        Ticket.find_or_create_by(account: account, phone_number: phone_number, user: user, ticket_id: ticket.id, source: "Zendesk", status: Ticket.get_status(ticket.status))
+      end
     elsif notification_type == "ImageReceived"
       # Attach image to ticket
       ticket = self.create_zendesk_ticket(account, "#{phone_number}##{tickets.size + 1}", "Image attached", zen_user_id, zen_user_id, "Urgent", [], ['Ongair', phone_number])
         # , [{"id"=>ticket_field["id"], "value"=>phone_number}])
-      Ticket.find_or_create_by(account: account, phone_number: phone_number, user: user, ticket_id: ticket.id, source: "Zendesk", status: Ticket.get_status(ticket.status))
+      if !ticket.nil?
+        Ticket.find_or_create_by(account: account, phone_number: phone_number, user: user, ticket_id: ticket.id, source: "Zendesk", status: Ticket.get_status(ticket.status))
+      end
       self.download_file image
       ticket.comment.uploads << "image.png"
       ticket.save
