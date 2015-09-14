@@ -212,7 +212,7 @@ module Ongair
         if !account.nil?
           zen_ticket = Zendesk.find_ticket(account, params[:ticket].to_i)
           if !zen_ticket.nil?
-            comment = Zendesk.find_ticket(account, params[:ticket].to_i).comments.last
+            zen_ticket.comments.last
             ticket = Ticket.find_by(ticket_id: params[:ticket].to_i, account: account)
             if !ticket.nil?
               phone_number = ticket.phone_number # Zendesk.find_phone_number_for_ticket(account, params[:ticket].to_i)
