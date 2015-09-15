@@ -61,6 +61,7 @@ GEM
       safe_yaml (~> 1.0.0)
     descendants_tracker (0.0.4)
       thread_safe (~> 0.3, >= 0.3.1)
+    detect_language (1.0.7)
     diff-lcs (1.2.5)
     dotenv (1.0.2)
     equalizer (0.0.9)
@@ -208,6 +209,7 @@ DEPENDENCIES
   activerecord
   airborne
   annotate
+  detect_language
   geocoder
   grape
   grape-swagger
@@ -224,3 +226,6 @@ DEPENDENCIES
   sqlite3
   webmock
   zendesk_api!
+
+BUNDLED WITH
+   1.10.6
