@@ -26,6 +26,11 @@ class Zendesk
      :requester_id => requester_id, :priority => priority, :custom_fields => custom_fields, :tags => tags)
   end
 
+  def self.initialize_zendesk_ticket account, subject, comment, submitter_id, requester_id, priority, custom_fields=[], tags=[]
+    ZendeskAPI::Ticket.new(self.client(account), :subject => subject, :comment => { :value => comment }, :submitter_id => submitter_id,
+     :requester_id => requester_id, :priority => priority, :custom_fields => custom_fields, :tags => tags)
+  end
+
   def self.find_ticket account, id    
     self.client(account).tickets.find(client(account), :id => id)
   end
@@ -117,14 +122,14 @@ class Zendesk
       end
     elsif notification_type == "ImageReceived"
       # Attach image to ticket
-      ticket = self.create_zendesk_ticket(account, "#{phone_number}##{tickets.size + 1}", "Image attached", zen_user_id, zen_user_id, "Urgent", [], ['Ongair', phone_number])
+      ticket = self.initialize_zendesk_ticket(account, "#{phone_number}##{tickets.size + 1}", "Image attached", zen_user_id, zen_user_id, "Urgent", [], ['Ongair', phone_number])
         # , [{"id"=>ticket_field["id"], "value"=>phone_number}])
-      if !ticket.nil?
-        Ticket.find_or_create_by(account: account, phone_number: phone_number, user: user, ticket_id: ticket.id, source: "Zendesk", status: Ticket.get_status(ticket.status))
-      end
       self.download_file image
       ticket.comment.uploads << "image.png"
       ticket.save
+      if !ticket.nil?
+        Ticket.find_or_create_by(account: account, phone_number: phone_number, user: user, ticket_id: ticket.id, source: "Zendesk", status: Ticket.get_status(ticket.status))
+      end
       `rm image.png`
     end
     ticket
