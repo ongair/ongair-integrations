@@ -101,6 +101,18 @@ class Zendesk
     end
   end
 
+  def self.locale account, text
+    language = DetectLanguage.simple_detect text
+    client = Zendesk.client(account)
+    locale_id = client.current_user.locale_id
+    client.locales.all do |locale|
+      if locale.locale == language
+        locale_id = locale.id
+      end
+    end
+    locale_id
+  end
+
   def self.new_ticket_config account
     conditions = {all: [{field: "update_type", operator: "is", value: "Create"}, {field: "via_id", operator: "is", value: 0}], any: []}
     target_url = "#{Ongair.config.app_url}/api/tickets/new?comment={{ticket.latest_comment}}"
@@ -197,6 +209,11 @@ class Zendesk
     if ticket.nil?
       response = {error: "Ticket could not be created or found!"}
     else
+      if account.detect_language
+        locale_id = self.locale(account, text)
+        zen_user.locale_id = locale_id
+        zen_user.save!
+      end
       response = { success: true }
     end
     response
