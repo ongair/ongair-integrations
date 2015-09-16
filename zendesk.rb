@@ -8,7 +8,8 @@ class Zendesk
     client = ZendeskAPI::Client.new do |config|
       config.url = account.zendesk_url
       config.username = account.zendesk_user
-      config.token = account.zendesk_access_token
+      config.token = account.zendesk_access_token if account.auth_method == "token_access"
+      config.access_token = account.zendesk_access_token if account.auth_method == "oauth"
       config.retry = true
       if ENV['RACK_ENV'] == 'development'
         require 'logger'
@@ -219,11 +220,11 @@ class Zendesk
     response
   end
 
-  def self.setup_account ongair_phone_number, zendesk_url, zendesk_access_token, zendesk_user, ongair_token, ongair_url, zendesk_ticket_auto_responder
+  def self.setup_account ongair_phone_number, zendesk_url, zendesk_access_token, zendesk_user, ongair_token, ongair_url, zendesk_ticket_auto_responder, source="token_access"
     a = Account.find_or_create_by! ongair_phone_number: ongair_phone_number
     a.update(zendesk_url: zendesk_url, zendesk_access_token: zendesk_access_token,
          zendesk_user: zendesk_user, ongair_token: ongair_token, ongair_url: ongair_url, 
-          zendesk_ticket_auto_responder: zendesk_ticket_auto_responder)
+          zendesk_ticket_auto_responder: zendesk_ticket_auto_responder, auth_method: source)
 
     # Trigger and action for ticket updates
     if a.setup
