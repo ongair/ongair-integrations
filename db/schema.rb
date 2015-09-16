@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150915161007) do
+ActiveRecord::Schema.define(version: 20150916182200) do
 
   create_table "accounts", force: :cascade do |t|
     t.string   "zendesk_url"
@@ -28,6 +28,7 @@ ActiveRecord::Schema.define(version: 20150915161007) do
     t.string   "ticket_end_status",             default: "4"
     t.string   "ticket_closed_notification"
     t.boolean  "detect_language",               default: false
+    t.string   "auth_method",                   default: "token_access"
   end
 
   add_index "accounts", ["client_id"], name: "index_accounts_on_client_id"
