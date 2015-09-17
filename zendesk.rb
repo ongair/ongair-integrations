@@ -139,7 +139,7 @@ class Zendesk
         # , [{"id"=>ticket_field["id"], "value"=>phone_number}])
       self.download_file image
       ticket.comment.uploads << "image.png"
-      ticket.save
+      ticket.save!
       if !ticket.nil?
         Ticket.find_or_create_by(account: account, phone_number: phone_number, user: user, ticket_id: ticket.id, source: "Zendesk", status: Ticket.get_status(ticket.status))
       end
