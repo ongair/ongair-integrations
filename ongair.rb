@@ -89,7 +89,7 @@ module Ongair
         requires :ongair_url, type: String
       end
       post do
-        Zendesk.setup_account params[:ongair_phone_number], params[:zendesk_url], params[:zendesk_access_token], params[:zendesk_user], params[:ongair_token], params[:ongair_url], params[:zendesk_ticket_auto_responder], params[:source]
+        Zendesk.setup_account params[:ongair_phone_number], params[:zendesk_url], params[:zendesk_access_token], params[:zendesk_user], params[:ongair_token], params[:ongair_url], params[:zendesk_ticket_auto_responder], params[:source], params[:ticket_end_status]
       end
     end
 

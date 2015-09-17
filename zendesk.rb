@@ -220,11 +220,11 @@ class Zendesk
     response
   end
 
-  def self.setup_account ongair_phone_number, zendesk_url, zendesk_access_token, zendesk_user, ongair_token, ongair_url, zendesk_ticket_auto_responder, source="token_access"
+  def self.setup_account ongair_phone_number, zendesk_url, zendesk_access_token, zendesk_user, ongair_token, ongair_url, zendesk_ticket_auto_responder, source="token_access", ticket_end_status="4"
     a = Account.find_or_create_by! ongair_phone_number: ongair_phone_number
     a.update(zendesk_url: zendesk_url, zendesk_access_token: zendesk_access_token,
          zendesk_user: zendesk_user, ongair_token: ongair_token, ongair_url: ongair_url, 
-          zendesk_ticket_auto_responder: zendesk_ticket_auto_responder, auth_method: source)
+          zendesk_ticket_auto_responder: zendesk_ticket_auto_responder, auth_method: source, ticket_end_status: ticket_end_status)
 
     # Trigger and action for ticket updates
     if a.setup
