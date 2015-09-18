@@ -124,6 +124,19 @@ class Zendesk
     Zendesk.create_trigger(account, "Ongair - New Ticket for WhatsApp end-user", conditions, actions)
   end
 
+  def update_triggers account
+    client = Zendesk.client(account)
+    triggers = client.triggers.select{|t| t.title.start_with?("Ongair") and t.active}
+    triggers.each do |trigger|
+      conditions = {all: [{field: "update_type", operator: "is", value: "Change"}, {field: "comment_is_public", operator: "is", value: "requester_can_see_comment"}, {field: "comment_is_public", operator: "is", value: "true"}, {field: "current_tags", operator: "includes", value: "ongair"}]} if trigger.title == "Ongair - Ticket commented on"
+      conditions = {all: [{field: "status", operator: "changed", value: nil}, {field: "current_tags", operator: "includes", value: "ongair"}], any: []} if trigger.title == "Ongair - Ticket status changed"
+      if !conditions.blank?
+        trigger.conditions = conditions
+        trigger.save!
+      end
+    end
+  end
+
   def self.setup_ticket notification_type, phone_number, zen_user_id, account, user, text, image, tickets
     ticket = nil
     ticket_field = Zendesk.find_or_create_ticket_field account, "text", "Phone number"
