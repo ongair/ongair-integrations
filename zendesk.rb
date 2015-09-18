@@ -230,7 +230,7 @@ class Zendesk
     if a.setup
       response = { message: "Account has already been setup." }
     else
-      conditions = {all: [{field: "update_type", operator: "is", value: "Change"}, {field: "comment_is_public", operator: "is", value: "requester_can_see_comment"}, {field: "comment_is_public", operator: "is", value: "true"}]}
+      conditions = {all: [{field: "update_type", operator: "is", value: "Change"}, {field: "comment_is_public", operator: "is", value: "requester_can_see_comment"}, {field: "comment_is_public", operator: "is", value: "true"}, {field: "current_tags", operator: "includes", value: "ongair"}]}
       target_url = "#{Ongair.config.app_url}/api/notifications?ticket={{ticket.id}}&account=#{a.ongair_phone_number}&comment={{ticket.latest_comment}}&author={{ticket.latest_comment.author.id}}"
       target = Zendesk.create_target(a, "Ongair - Ticket commented on", target_url, "comment", "POST")
       
@@ -242,7 +242,7 @@ class Zendesk
 
         # Trigger and action for ticket status changes
 
-        conditions = {all: [{field: "status", operator: "changed", value: nil}], any: []}
+        conditions = {all: [{field: "status", operator: "changed", value: nil}, {field: "current_tags", operator: "includes", value: "ongair"}], any: []}
         target_url = "#{Ongair.config.app_url}/api/tickets/status_change?ticket={{ticket.id}}&account=#{a.ongair_phone_number}&status={{ticket.status}}"
         target = Zendesk.create_target(a, "Ongair - Ticket status changed", target_url, "comment", "POST")
         
