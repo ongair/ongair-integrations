@@ -139,16 +139,18 @@ class Zendesk
 
   def self.setup_ticket notification_type, phone_number, zen_user_id, account, user, text, image, tickets
     ticket = nil
+    tags = ['Ongair', phone_number]
+    tags.push(account.name) if !account.name.blank?
     ticket_field = Zendesk.find_or_create_ticket_field account, "text", "Phone number"
     if notification_type == "MessageReceived"
-      ticket = self.create_zendesk_ticket(account, "#{phone_number}##{tickets.size + 1}", text, zen_user_id, zen_user_id, "Urgent", [], ['Ongair', phone_number])
+      ticket = self.create_zendesk_ticket(account, "#{phone_number}##{tickets.size + 1}", text, zen_user_id, zen_user_id, "Urgent", [], tags)
         # , [{"id"=>ticket_field["id"], "value"=>phone_number}])
       if !ticket.nil?
         Ticket.find_or_create_by(account: account, phone_number: phone_number, user: user, ticket_id: ticket.id, source: "Zendesk", status: Ticket.get_status(ticket.status))
       end
     elsif notification_type == "ImageReceived"
       # Attach image to ticket
-      ticket = self.initialize_zendesk_ticket(account, "#{phone_number}##{tickets.size + 1}", "Image attached", zen_user_id, zen_user_id, "Urgent", [], ['Ongair', phone_number])
+      ticket = self.initialize_zendesk_ticket(account, "#{phone_number}##{tickets.size + 1}", "Image attached", zen_user_id, zen_user_id, "Urgent", [], tags)
         # , [{"id"=>ticket_field["id"], "value"=>phone_number}])
       self.download_file image
       ticket.comment.uploads << "image.png"
@@ -215,7 +217,7 @@ class Zendesk
         if !ticket.nil? && !account.zendesk_ticket_auto_responder.blank?
           WhatsApp.send_message(account, phone_number, WhatsApp.personalize_message(account.zendesk_ticket_auto_responder, ticket.id, name))
         end
-        
+
         if !ticket.nil?
           Ticket.find_or_create_by(account: account, phone_number: phone_number, user: user, ticket_id: ticket.id, source: "Zendesk", status: Ticket.get_status(ticket.status))
           orphan.destroy
