@@ -124,7 +124,7 @@ class Zendesk
     Zendesk.create_trigger(account, "Ongair - New Ticket for WhatsApp end-user", conditions, actions)
   end
 
-  def update_triggers account
+  def self.update_triggers account
     client = Zendesk.client(account)
     triggers = client.triggers.select{|t| t.title.start_with?("Ongair") and t.active}
     triggers.each do |trigger|
@@ -215,9 +215,11 @@ class Zendesk
         if !ticket.nil? && !account.zendesk_ticket_auto_responder.blank?
           WhatsApp.send_message(account, phone_number, WhatsApp.personalize_message(account.zendesk_ticket_auto_responder, ticket.id, name))
         end
-
-        Ticket.find_or_create_by(account: account, phone_number: phone_number, user: user, ticket_id: ticket.id, source: "Zendesk", status: Ticket.get_status(ticket.status))
-        orphan.destroy
+        
+        if !ticket.nil?
+          Ticket.find_or_create_by(account: account, phone_number: phone_number, user: user, ticket_id: ticket.id, source: "Zendesk", status: Ticket.get_status(ticket.status))
+          orphan.destroy
+        end
       end
     end
     if ticket.nil?
