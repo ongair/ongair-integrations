@@ -135,6 +135,29 @@ module Ongair
         end
       end
 
+      post :notification do
+        ticket = Ticket.find_by(account: account, ticket_id: params[:ticket])
+        if !ticket.nil?
+          phone_number = ticket.phone_number
+          WhatsApp.send_message(account, phone_number, params[:message])
+        else
+          ticket = Ticket.find_by(account: account, ticket_id: params[:ticket])
+          n = 1
+          while ticket.nil?
+            ticket = Ticket.find_by(account: account, ticket_id: params[:ticket])
+            n += 1
+            if n == 5
+              break
+            end
+          end
+
+          if !ticket.nil?
+            phone_number = ticket.phone_number
+            WhatsApp.send_message(account, phone_number, params[:message])
+          end
+        end
+      end
+
       post :new do
         payload = eval(params[:payload])
         account = Account.find_by(ongair_phone_number: payload[:account])
