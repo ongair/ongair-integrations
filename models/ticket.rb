@@ -34,7 +34,7 @@ class Ticket < ActiveRecord::Base
 		status_pending = {STATUS_PENDING => ["pending", "pendiente", "in afwachting", "pendente", "wartend"]}
 		status_on_hold = {STATUS_ON_HOLD => ["on-hold", "angehalten"]}
 		status_solved = {STATUS_SOLVED => ["solved", "resuelto", "resolvido", "opgelost", "gelöst"]}
-		status_closed = {STATUS_CLOSED => ["closed", "cerrado", "geschlossen"]}
+		status_closed = {STATUS_CLOSED => ["closed", "cerrado", "geschlossen", "fechado"]}
 		status_dictionary = {status_new: status_new, status_open: status_open, status_pending: status_pending, status_solved: status_solved, status_closed: status_closed, status_on_hold: status_on_hold}
 	end
 
