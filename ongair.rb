@@ -29,7 +29,7 @@ module Ongair
     helpers do
       def account
         account = Account.find_by(ongair_phone_number: params[:account])
-        if account.nil? && !params[:client].empty?
+        if account.nil? && !params[:client].blank?
           client = Client.find(params[:client])
           tickets = Ticket.where(ticket_id: params[:ticket])
           if !client.nil?
