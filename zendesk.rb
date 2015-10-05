@@ -124,6 +124,38 @@ class Zendesk
     Zendesk.create_trigger(account, "Ongair - New Ticket for WhatsApp end-user", conditions, actions)
   end
 
+  def self.new_ticket_notification account, time_based=false, language_based=false, options={}
+    # options = {message: "Hello", in_business_msg: "Hello", not_in_business_msg: "Bye", languages: {'French' => "Hi", 'Arabic' => "Salam", 'default' => "Hello"}}
+    target_url = "#{Ongair.config.app_url}/api/tickets/notification?account=#{account.ongair_phone_number}&ticket={{ticket.id}}"
+    target = Zendesk.create_target(account, "Ongair Test - New Ticket Notification", target_url, "message", "POST")
+
+    if time_based
+      in_business_msg = options[:in_business_msg]
+      not_in_business_msg = options[:not_in_business_msg]
+      message = "{% if ticket.in_business_hours == 'true' %}\n"
+      message += "#{in_business_msg}\n"
+      message += "{% else %}\n"
+      message += "#{not_in_business_msg}\n"
+      message += "{% endif %}"
+    elsif language_based
+      message = "{% case ticket.requester.language %}\n"
+      options[:languages].each do |language, msg|
+        if language != 'default'
+          message += "{% when '#{language}' %}\n"
+          message += "#{msg}\n"
+        end
+      end
+      message += "{% else %}\n"
+      message += "#{options[:languages]['default']}\n"
+      message += "{% endcase %}"
+    else
+      message = options[:message]
+    end
+    conditions = {all: [{field: "update_type", operator: "is", value: "Create"}, {field: "current_tags", operator: "includes", value: "ongair"}]}
+    actions = [{field: "notification_target", value: [target.id, message]}]
+    Zendesk.create_trigger(account, "Ongair Test - New Ticket Notification", conditions, actions)
+  end
+
   def self.update_triggers account
     client = Zendesk.client(account)
     triggers = client.triggers.select{|t| t.title.start_with?("Ongair") and t.active}
