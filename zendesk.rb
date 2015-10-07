@@ -173,17 +173,14 @@ class Zendesk
     ticket = nil
     tags = ['Ongair', phone_number]
     tags.push(account.name) if !account.name.blank?
-    ticket_field = Zendesk.find_or_create_ticket_field account, "text", "Phone number"
     if notification_type == "MessageReceived"
       ticket = self.create_zendesk_ticket(account, "#{phone_number}##{tickets.size + 1}", text, zen_user_id, zen_user_id, "Urgent", [], tags)
-        # , [{"id"=>ticket_field["id"], "value"=>phone_number}])
       if !ticket.nil?
         Ticket.find_or_create_by(account: account, phone_number: phone_number, user: user, ticket_id: ticket.id, source: "Zendesk", status: Ticket.get_status(ticket.status))
       end
     elsif notification_type == "ImageReceived"
       # Attach image to ticket
       ticket = self.initialize_zendesk_ticket(account, "#{phone_number}##{tickets.size + 1}", "Image attached", zen_user_id, zen_user_id, "Urgent", [], tags)
-        # , [{"id"=>ticket_field["id"], "value"=>phone_number}])
       self.download_file image
       ticket.comment.uploads << "image.png"
       ticket.save!
@@ -279,6 +276,7 @@ class Zendesk
     if a.setup
       response = { message: "Account has already been setup." }
     else
+
       conditions = {all: [{field: "update_type", operator: "is", value: "Change"}, {field: "comment_is_public", operator: "is", value: "requester_can_see_comment"}, {field: "comment_is_public", operator: "is", value: "true"}, {field: "current_tags", operator: "includes", value: "ongair"}]}
       target_url = "#{Ongair.config.app_url}/api/notifications?ticket={{ticket.id}}&account=#{a.ongair_phone_number}&comment={{ticket.latest_comment}}&author={{ticket.latest_comment.author.id}}"
       target = Zendesk.create_target(a, "Ongair - Ticket commented on", target_url, "comment", "POST")
@@ -297,6 +295,8 @@ class Zendesk
         
         actions = [{field: "notification_target", value: [target.id, "The status of your ticket has been changed to {{ticket.status}}"]}]
         Zendesk.create_trigger(a, "Ongair - Ticket status changed", conditions, actions)
+
+        Zendesk.find_or_create_ticket_field a, "text", "Phone number"
 
         a.update(setup: true)
 
