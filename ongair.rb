@@ -5,6 +5,7 @@ require './models/location'
 require './models/ticket'
 require './models/user'
 require './models/client'
+require './models/response'
 require 'rubygems'
 require 'zendesk_api'
 require 'open-uri'
@@ -238,6 +239,13 @@ module Ongair
             comment = zen_ticket.comments.last
             ticket = Ticket.find_by(ticket_id: params[:ticket].to_i, account: account)
             if !ticket.nil?
+              if !params[:phone_number].blank? && !params[:requester_name].blank?
+                if ticket.phone_number != params[:phone_number]
+                  WhatsApp.create_contact account, params[:phone_number], params[:requester_name]
+                  ticket.update(phone_number: params[:phone_number])
+                  ticket.user.update(phone_number: params[:phone_number])
+                end
+              end
               phone_number = ticket.phone_number # Zendesk.find_phone_number_for_ticket(account, params[:ticket].to_i)
 
               if params.has_key?(:author)
