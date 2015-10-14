@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150921134200) do
+ActiveRecord::Schema.define(version: 20151014124700) do
 
   create_table "accounts", force: :cascade do |t|
     t.string   "zendesk_url"
@@ -30,9 +30,23 @@ ActiveRecord::Schema.define(version: 20150921134200) do
     t.boolean  "detect_language",               default: false
     t.string   "auth_method",                   default: "token_access"
     t.string   "name"
+    t.string   "time"
+    t.string   "timezone"
   end
 
   add_index "accounts", ["client_id"], name: "index_accounts_on_client_id"
+
+  create_table "business_hours", force: :cascade do |t|
+    t.integer  "account_id"
+    t.string   "day"
+    t.string   "from"
+    t.string   "to"
+    t.boolean  "work_day",   default: true
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "business_hours", ["account_id"], name: "index_business_hours_on_account_id"
 
   create_table "clients", force: :cascade do |t|
     t.string   "name"
@@ -50,6 +64,16 @@ ActiveRecord::Schema.define(version: 20150921134200) do
   end
 
   add_index "locations", ["account_id"], name: "index_locations_on_account_id"
+
+  create_table "responses", force: :cascade do |t|
+    t.integer  "account_id"
+    t.text     "in_business_hours"
+    t.text     "not_in_business_hours"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "responses", ["account_id"], name: "index_responses_on_account_id"
 
   create_table "tickets", force: :cascade do |t|
     t.string   "phone_number"
