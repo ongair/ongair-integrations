@@ -205,8 +205,8 @@ class Zendesk
 
     if tickets.size == 0
       ticket = self.setup_ticket notification_type, phone_number, zen_user_id, account, user, text, image, tickets
-      if !ticket.nil? && !account.zendesk_ticket_auto_responder.blank?
-        WhatsApp.send_message(account, phone_number, WhatsApp.personalize_message(account.zendesk_ticket_auto_responder, ticket.id, name))
+      if !ticket.nil? && !account.response.blank?
+        WhatsApp.send_message(account, phone_number, WhatsApp.personalize_message(account.response, ticket.id, name))
       end
     else
       # If unsolved ticket is found for user, their message is added as a comment
@@ -234,8 +234,8 @@ class Zendesk
           ticket.save!
         rescue ZendeskAPI::Error::RecordInvalid => e
           ticket = self.setup_ticket notification_type, phone_number, zen_user_id, account, user, text, image, tickets
-          if !ticket.nil? && !account.zendesk_ticket_auto_responder.blank?
-            WhatsApp.send_message(account, phone_number, WhatsApp.personalize_message(account.zendesk_ticket_auto_responder, ticket.id, name))
+          if !ticket.nil? && !account.response.blank?
+            WhatsApp.send_message(account, phone_number, WhatsApp.personalize_message(account.response, ticket.id, name))
           end
         end 
         `rm image.png` if notification_type == "ImageReceived"
@@ -243,8 +243,8 @@ class Zendesk
         orphan = tickets.last
         ticket = self.setup_ticket notification_type, phone_number, zen_user_id, account, user, text, image, tickets
 
-        if !ticket.nil? && !account.zendesk_ticket_auto_responder.blank?
-          WhatsApp.send_message(account, phone_number, WhatsApp.personalize_message(account.zendesk_ticket_auto_responder, ticket.id, name))
+        if !ticket.nil? && !account.response.blank?
+          WhatsApp.send_message(account, phone_number, WhatsApp.personalize_message(account.response, ticket.id, name))
         end
 
         if !ticket.nil?
