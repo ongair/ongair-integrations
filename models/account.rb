@@ -8,6 +8,19 @@ class Account < ActiveRecord::Base
 	has_many :responses
 	has_many :business_hours
 
+	def set_business_hours days
+		# [ {day: "Monday", from: "08", to: "17", work_day: true}, {day: "Tuesday", from: "09", to: "18", work_day: true} ]
+		days.each do |day|
+			bh = BusinessHour.find_or_create_by! day: day[:day], account_id: id
+			bh.update(from: day[:from], to: day[:to])
+		end
+	end
+
+	def set_responses in_business_message, not_in_business_message
+		response = Response.find_or_create_by! account_id: id
+		response.update in_business_hours: in_business_message, not_in_business_hours: not_in_business_message
+	end
+
 	def time
 		if !timezone.blank?
 			begin
