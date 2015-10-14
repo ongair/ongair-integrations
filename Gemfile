@@ -13,6 +13,7 @@ gem 'pry-nav'
 gem 'rollbar'
 gem 'newrelic_rpm'
 gem 'detect_language'
+gem 'timezone'
 #gem 'curb'
 
 group :development do 
