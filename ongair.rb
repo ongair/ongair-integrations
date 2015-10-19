@@ -254,8 +254,10 @@ module Ongair
               else
                 user = User.where(zendesk_id: comment.author_id, account: account).first
               end
+
+              role = Zendesk.client(account).users.find(id: comment.author_id)['role']
               
-              if (!ticket.nil? && ticket.user != user) || user.nil?
+              if !ticket.nil? && role != "end-user"
                 # Send ticket comment through WhatsApp
                 WhatsApp.send_message account, phone_number, params[:comment]
 
