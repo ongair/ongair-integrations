@@ -71,6 +71,33 @@ class Account < ActiveRecord::Base
 		msg
 	end
 
+	def is_number?(object)
+	  true if Float(object) rescue false
+	end
+
+	def get_tickets
+		tickets = []
+		client = Zendesk.client(self)
+		client.tickets.each do |t|
+		  tags = t.tags  
+		  tags.each do |tag|  
+		    if tag.id == 'ongair'    
+		      phone_number = tags.select{|tg| is_number?(tg.id)}.first.id
+		      tickets << {ticket_id: t.id, phone_number: phone_number, status: Ticket.get_status(t.status), requester: t.requester_id}
+		    end  
+		  end  
+		end  
+		tickets
+	end
+
+	def import_zendesk_tickets
+		tickets = get_tickets
+		tickets.each do |ticket|
+			user = User.find_or_create_by account: self, phone_number: ticket[:phone_number], zendesk_id: ticket[:requester]
+			Ticket.find_or_create_by account: self, phone_number: ticket[:phone_number], ticket_id: ticket[:ticket_id], status: ticket[:status], user: user, source: "Zendesk"
+		end
+	end
+
 	def update_details options
 		# options = { account: {ongair_phone_number: "254722777888", zat: "etwet2t", ot: "dsgg"}, integrations_url: "http://integrations.ongair.im" }
 		phone = options[:account][:ongair_phone_number]
