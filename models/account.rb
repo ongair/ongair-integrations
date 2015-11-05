@@ -70,4 +70,30 @@ class Account < ActiveRecord::Base
 		end
 		msg
 	end
+
+	def update_details options
+		# options = { account: {ongair_phone_number: "254722777888", zat: "etwet2t", ot: "dsgg"}, integrations_url: "http://integrations.ongair.im" }
+		phone = options[:account][:ongair_phone_number]
+		new_url = options[:integrations_url]
+		old_url = "http://77f3f2cd.ngrok.io" # "http://41.242.1.46"
+		client = Zendesk.client(self)
+		targets = client.targets.select{|t| t.title.start_with?("Ongair") and t.active}
+
+		targets.each do |tar|
+			url = tar.target_url
+			if !phone.blank? && phone != ongair_phone_number
+				url = url.gsub!(ongair_phone_number, phone)
+				puts ">>>> 1"
+			elsif !new_url.blank?
+				url = url.gsub!(old_url, new_url)
+				puts ">>>> 2"
+			end
+			puts ">>>>>> URL: #{url}"
+			tar.target_url = url
+			puts ">>>>>> Target URL: #{tar.target_url}"
+			tar.save!
+		end
+		
+		update(options[:account])
+	end
 end
