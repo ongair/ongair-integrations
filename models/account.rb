@@ -76,18 +76,18 @@ class Account < ActiveRecord::Base
 	end
 
 	def get_tickets
-		tickets = []
-		client = Zendesk.client(self)
-		client.tickets.each do |t|
+		tickets = Zendesk.client(self).tickets.include(:tags).to_a
+		ts = []
+		tickets.each do |t|
 		  tags = t.tags  
 		  tags.each do |tag|  
-		    if tag.id == 'ongair'    
+		    if !tag.nil? && tag.id == 'ongair'    
 		      phone_number = tags.select{|tg| is_number?(tg.id)}.first.id
-		      tickets << {ticket_id: t.id, phone_number: phone_number, status: Ticket.get_status(t.status), requester: t.requester_id}
+		      ts << {ticket_id: t.id, phone_number: phone_number, status: Ticket.get_status(t.status), requester: t.requester_id}
 		    end  
 		  end  
 		end  
-		tickets
+		ts
 	end
 
 	def import_zendesk_tickets
