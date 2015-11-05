@@ -81,9 +81,12 @@ class Account < ActiveRecord::Base
 		tickets.each do |t|
 		  tags = t.tags  
 		  tags.each do |tag|  
-		    if !tag.nil? && tag.id == 'ongair'    
-		      phone_number = tags.select{|tg| is_number?(tg.id)}.first.id
-		      ts << {ticket_id: t.id, phone_number: phone_number, status: Ticket.get_status(t.status), requester: t.requester_id}
+		    if tag.id == 'ongair'    
+		      t = tags.select{|tg| is_number?(tg.id)}.first
+		      if !t.blank?
+		      	phone_number = t.id
+		      	ts << {ticket_id: t.id, phone_number: phone_number, status: Ticket.get_status(t.status), requester: t.requester_id}
+		      end
 		    end  
 		  end  
 		end  
