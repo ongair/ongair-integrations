@@ -76,9 +76,9 @@ class Account < ActiveRecord::Base
 	end
 
 	def get_tickets
-		tickets = Zendesk.client(self).tickets.include(:tags).to_a
+		client = Zendesk.client(self)
 		ts = []
-		tickets.each do |t|
+		client.tickets.all do |t|
 		  tags = t.tags  
 		  tags.each do |tag|  
 		    if tag.id == 'ongair'    
