@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20151014124700) do
+ActiveRecord::Schema.define(version: 20151119124100) do
 
   create_table "accounts", force: :cascade do |t|
     t.string   "zendesk_url"
@@ -24,17 +24,16 @@ ActiveRecord::Schema.define(version: 20151014124700) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.boolean  "setup",                         default: false
-    t.integer  "client_id"
     t.string   "ticket_end_status",             default: "4"
     t.string   "ticket_closed_notification"
     t.boolean  "detect_language",               default: false
     t.string   "auth_method",                   default: "token_access"
     t.string   "name"
-    t.string   "time"
     t.string   "timezone"
+    t.string   "integration_type",              default: "Zendesk"
+    t.string   "freshdesk_url"
+    t.string   "freshdesk_token"
   end
-
-  add_index "accounts", ["client_id"], name: "index_accounts_on_client_id"
 
   create_table "business_hours", force: :cascade do |t|
     t.integer  "account_id"
