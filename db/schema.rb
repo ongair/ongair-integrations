@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20151119124100) do
+ActiveRecord::Schema.define(version: 20151119125200) do
 
   create_table "accounts", force: :cascade do |t|
     t.string   "zendesk_url"
@@ -73,6 +73,21 @@ ActiveRecord::Schema.define(version: 20151119124100) do
   end
 
   add_index "responses", ["account_id"], name: "index_responses_on_account_id"
+
+  create_table "surveys", force: :cascade do |t|
+    t.integer  "user_id"
+    t.integer  "ticket_id"
+    t.integer  "account_id"
+    t.integer  "rating"
+    t.string   "comment"
+    t.boolean  "completed",  default: false
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "surveys", ["account_id"], name: "index_surveys_on_account_id"
+  add_index "surveys", ["ticket_id"], name: "index_surveys_on_ticket_id"
+  add_index "surveys", ["user_id"], name: "index_surveys_on_user_id"
 
   create_table "tickets", force: :cascade do |t|
     t.string   "phone_number"
