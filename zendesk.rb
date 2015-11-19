@@ -135,7 +135,7 @@ class Zendesk
   def self.new_ticket_notification account, time_based=false, language_based=false, options={}
     # options = {message: "Hello", in_business_msg: "Hello", not_in_business_msg: "Bye", languages: {'French' => "Hi", 'Arabic' => "Salam", 'default' => "Hello"}}
     target_url = "#{Ongair.config.app_url}/api/tickets/notification?account=#{account.ongair_phone_number}&ticket={{ticket.id}}"
-    target = Zendesk.create_target(account, "Ongair Test - New Ticket Notification", target_url, "message", "POST")
+    target = Zendesk.create_target(account, "Ongair - New Ticket Notification", target_url, "message", "POST")
 
     if time_based
       in_business_msg = options[:in_business_msg]
