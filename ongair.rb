@@ -136,7 +136,7 @@ module Ongair
           end
         end
       end
-
+      # Autoresponder to notify user of new ticket. This can be based on either language or time.
       post :notification do
         ticket = Ticket.find_by(account: account, ticket_id: params[:ticket])
         if !ticket.nil?
@@ -159,7 +159,7 @@ module Ongair
           end
         end
       end
-
+      # This allows for a ticket to be created on Zendesk on behalf of a user and the ticket message will be sent to the user.
       post :new do
         payload = eval(params[:payload])
         account = Account.find_by(ongair_phone_number: payload[:account])
