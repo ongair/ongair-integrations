@@ -3,6 +3,7 @@ require "active_record"
 class User < ActiveRecord::Base
 	has_many :tickets
 	belongs_to :account
+	has_many :surveys
 
 	def self.create_user_for_each_account
 		Ticket.all.each do |ticket|
