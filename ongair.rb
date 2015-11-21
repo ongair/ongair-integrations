@@ -7,12 +7,14 @@ require './models/user'
 require './models/client'
 require './models/response'
 require './models/business_hour'
+require './models/survey'
 require 'rubygems'
 require 'zendesk_api'
 require 'open-uri'
 # require 'pry'
 
 require_relative 'zendesk'
+require_relative 'freshdesk'
 require_relative 'whatsapp'
 
 
@@ -118,7 +120,12 @@ module Ongair
         if params[:notification_type] == "LocationReceived"
           WhatsApp.send_location params[:latitude], params[:longitude], params[:phone_number]
         elsif params[:notification_type] == "MessageReceived" || params[:notification_type] == "ImageReceived"
-          Zendesk.create_ticket params[:phone_number], params[:name], params[:text], params[:notification_type], params[:image], account
+          if account.integration_type == "Zendesk"
+            Zendesk.create_ticket params[:phone_number], params[:name], params[:text], params[:notification_type], params[:image], account
+          elsif account.integration_type == "Freshdesk"
+            user = User.find_or_create_by!(phone_number: params[:phone_number])
+            Freshdesk.create_ticket account, user, params[:text], params[:notification_type], params[:image]
+          end
         end
       end
 
@@ -271,6 +278,35 @@ module Ongair
                 end
               end
             end
+          end
+        end
+      end
+    end
+
+    # Freshdesk endpoints
+
+    resource :freshdesk do
+      post :comments do
+        ticket_id = params[:freshdesk_webhook][:ticket_id]
+        comment = Freshdesk.strip_html(params[:freshdesk_webhook][:ticket_latest_public_comment])
+        ticket = Ticket.find_by(ticket_id: ticket_id.to_s, account: account)
+
+        if !ticket.nil?
+          phone_number = ticket.phone_number
+          WhatsApp.send_message(account, user.phone_number, comment)
+        end
+      end
+
+      post :status do
+        ticket_id = params[:freshdesk_webhook][:ticket_id]
+        status = params[:freshdesk_webhook][:ticket_status]
+        ticket = Ticket.find_by(ticket_id: ticket_id.to_s, account: account)
+        ticket.update(status: Ticket.get_status(status)) if !ticket.nil?
+
+        if ticket.status == "5"
+          s = Survey.find_or_create_by! user: ticket.user, ticket: ticket, account: account
+          if !s.completed
+            WhatsApp.send_message(account, user.phone_number, "How would you rate our support? Reply with 1, 2 or 3. 1 being Excellent, 2 being Good and 3 being Bad. Thanks.")
           end
         end
       end
