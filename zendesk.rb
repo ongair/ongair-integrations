@@ -32,12 +32,17 @@ class Zendesk
      :requester_id => requester_id, :priority => priority, :custom_fields => custom_fields, :tags => tags)
   end
 
-  def self.find_ticket account, id    
+  def self.find_ticket account, id
     self.client(account).tickets.find(client(account), :id => id)
   end
 
   def self.create_ticket_field account, type, title
     ZendeskAPI::TicketField.create(self.client(account), {type: type, title: title})
+  end
+
+  def self.create_view client, title, conditions
+    # conditions = {all: [{field: "current_tags", operator: "includes", value: "ongair"}, {field: "status", operator: "less_than", value: "solved"}], any: [{field: "via_id", operator: "is", value: '5'}]}
+    client.views.create({title: "Ongair 2", conditions: conditions})
   end
 
   def self.find_ticket_field account, title
@@ -85,7 +90,7 @@ class Zendesk
 
   def self.create_user account, name, phone_number
     client = self.client(account)
-    ZendeskAPI::User.create(client, { name: name, phone: phone_number })
+    ZendeskAPI::User.create(client, { name: name, phone: phone_number, verified: true })
   end
 
   def self.find_or_create_user account, name, phone_number
@@ -101,7 +106,7 @@ class Zendesk
   end
 
   def self.create_target account, title, target_url, attribute, method
-    ZendeskAPI::Target.create(self.client(account), {type: "url_target", title: title, target_url: target_url, attribute: attribute, method: method})   
+    ZendeskAPI::Target.create(self.client(account), {type: "url_target", title: title, target_url: target_url, attribute: attribute, method: method})
   end
 
   def self.download_file image
@@ -126,7 +131,7 @@ class Zendesk
     conditions = {all: [{field: "update_type", operator: "is", value: "Create"}, {field: "via_id", operator: "is", value: 0}], any: []}
     target_url = "#{Ongair.config.app_url}/api/tickets/new?comment={{ticket.latest_comment}}"
     target = Zendesk.create_target(account, "Ongair - New Ticket for WhatsApp end-user", target_url, "payload", "POST")
-    
+
     payload = "{ ticket: { id: '{{ticket.id}}', status: '{{ticket.status}}', requester: { id: '{{ticket.requester.id}}', phone_number: '{{ticket.requester.phone}}', name: '{{ticket.requester.name}}' } }, account: #{account.ongair_phone_number} }"
     actions = [{field: "notification_target", value: [target.id, payload]}]
     Zendesk.create_trigger(account, "Ongair - New Ticket for WhatsApp end-user", conditions, actions)
@@ -212,10 +217,6 @@ class Zendesk
       user.update zendesk_id: zen_user.id
     else
       zen_user = Zendesk.find_user(account, user.zendesk_id)
-      if zen_user.name == "Infobip User"
-        zen_user.name = name
-        zen_user.save!
-      end
       if zen_user.nil?
         zen_user = Zendesk.create_user(account, name, phone_number)
         user.update zendesk_id: zen_user.id
@@ -248,7 +249,7 @@ class Zendesk
           self.download_file image
           ticket.comment.uploads << "image.png"
         end
-        
+
         begin
           ticket.save!
         rescue ZendeskAPI::Error::RecordInvalid => e
@@ -256,7 +257,7 @@ class Zendesk
           if !ticket.nil? && !account.response.blank?
             WhatsApp.send_message(account, phone_number, WhatsApp.personalize_message(account.response, ticket.id, name))
           end
-        end 
+        end
         `rm image.png` if notification_type == "ImageReceived"
       else
         orphan = tickets.last
@@ -288,7 +289,7 @@ class Zendesk
   def self.setup_account ongair_phone_number, zendesk_url, zendesk_access_token, zendesk_user, ongair_token, ongair_url, zendesk_ticket_auto_responder, source="token_access", ticket_end_status="4"
     a = Account.find_or_create_by! ongair_phone_number: ongair_phone_number
     a.update(zendesk_url: zendesk_url, zendesk_access_token: zendesk_access_token,
-         zendesk_user: zendesk_user, ongair_token: ongair_token, ongair_url: ongair_url, 
+         zendesk_user: zendesk_user, ongair_token: ongair_token, ongair_url: ongair_url,
           zendesk_ticket_auto_responder: zendesk_ticket_auto_responder, auth_method: source, ticket_end_status: ticket_end_status)
 
     # Trigger and action for ticket updates
@@ -299,7 +300,7 @@ class Zendesk
       conditions = {all: [{field: "update_type", operator: "is", value: "Change"}, {field: "comment_is_public", operator: "is", value: "requester_can_see_comment"}, {field: "comment_is_public", operator: "is", value: "true"}, {field: "current_tags", operator: "includes", value: "ongair"}]}
       target_url = "#{Ongair.config.app_url}/api/notifications?ticket={{ticket.id}}&account=#{a.ongair_phone_number}&comment={{ticket.latest_comment}}&author={{ticket.latest_comment.author.id}}"
       target = Zendesk.create_target(a, "Ongair - Ticket commented on", target_url, "comment", "POST")
-      
+
       if target.nil?
         response = {error: "Could not be authenticated!"}
       else
@@ -311,7 +312,7 @@ class Zendesk
         conditions = {all: [{field: "status", operator: "changed", value: nil}, {field: "current_tags", operator: "includes", value: "ongair"}], any: []}
         target_url = "#{Ongair.config.app_url}/api/tickets/status_change?ticket={{ticket.id}}&account=#{a.ongair_phone_number}&status={{ticket.status}}"
         target = Zendesk.create_target(a, "Ongair - Ticket status changed", target_url, "comment", "POST")
-        
+
         actions = [{field: "notification_target", value: [target.id, "The status of your ticket has been changed to {{ticket.status}}"]}]
         Zendesk.create_trigger(a, "Ongair - Ticket status changed", conditions, actions)
 
